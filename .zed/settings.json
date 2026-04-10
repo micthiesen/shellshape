@@ -1,0 +1,20 @@
+{
+  "tab_size": 4,
+  "hard_tabs": true,
+  "format_on_save": "on",
+  "ensure_final_newline_on_save": true,
+  "remove_trailing_whitespace_on_save": true,
+
+  "languages": {
+    "Go": {
+      "formatter": "language_server"
+    },
+    "JSON": {
+      "tab_size": 2,
+      "hard_tabs": false
+    },
+    "Markdown": {
+      "format_on_save": "off"
+    }
+  }
+}
