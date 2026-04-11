@@ -11,7 +11,7 @@ var fusedNumericRE = regexp.MustCompile(`^-([ABCm])(\d+)$`)
 // Fused numeric flags like -A3 are split into -A and N.
 // First positional (if no pattern assigned) becomes <pattern>.
 // Remaining positionals use classifyToken.
-func handleGrep(tokens []string) []string {
+func handleGrep(subcommand string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	patternFlags := map[string]bool{"-e": true, "--regexp": true}

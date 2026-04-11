@@ -89,7 +89,8 @@ var subcommandExecutables = map[string]bool{
 	"pip": true, "pip3": true, "uv": true, "poetry": true, "brew": true,
 	"apt": true, "dnf": true, "pacman": true, "snap": true,
 	"systemctl": true, "launchctl": true, "sst": true, "pulumi": true,
-	"ollama": true, "lms": true,
+	"ollama": true, "lms": true, "fnm": true,
+	"tmux": true,
 }
 
 // Interpreters that accept inline code via -c / -e / --command.
@@ -159,15 +160,17 @@ func normalizeSingleCommand(seg string) string {
 
 	result := append(envParts, exe)
 
+	var subcommand string
 	// Subcommand detection.
 	if subcommandExecutables[exe] && i < len(tokens) {
+		subcommand = tokens[i]
 		result = append(result, tokens[i])
 		i++
 	}
 
 	// Per-executable handler.
 	if handler, ok := handlers[exe]; ok {
-		result = append(result, handler(tokens[i:])...)
+		result = append(result, handler(subcommand, tokens[i:])...)
 		return strings.Join(result, " ")
 	}
 

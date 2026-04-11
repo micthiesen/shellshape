@@ -3,7 +3,7 @@ package shellshape
 // handleEcho handles echo and printf commands.
 // Flags before the first positional are preserved. All positional string args
 // collapse to a single <str>. Subshells are kept verbatim.
-func handleEcho(tokens []string) []string {
+func handleEcho(subcommand string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	var result []string

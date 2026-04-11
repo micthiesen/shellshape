@@ -5,7 +5,7 @@ package shellshape
 // File flags (-f, --file) make the next arg <path>.
 // First positional (if no script assigned) becomes <sed-expr>.
 // Remaining positionals use classifyToken.
-func handleSed(tokens []string) []string {
+func handleSed(subcommand string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	sedExprFlags := map[string]bool{"-e": true, "--expression": true}

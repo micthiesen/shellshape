@@ -5,7 +5,7 @@ package shellshape
 // First positional is the database path (<path>).
 // Second positional is the SQL query (<sql>).
 // Flags that take a value argument: -separator, -newline, -cmd, -init.
-func handleSqlite3(tokens []string) []string {
+func handleSqlite3(_ string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	valueFlagsSqlite := map[string]bool{

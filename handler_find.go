@@ -9,7 +9,7 @@ import "strings"
 // Subshells are preserved verbatim.
 // Tokens starting with - but not flags (find primaries) are kept verbatim.
 // Remaining positionals use classifyToken.
-func handleFind(tokens []string) []string {
+func handleFind(subcommand string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	patternFlags := map[string]bool{
