@@ -9,11 +9,11 @@
 #   2. Near-duplicate shapes — similar shapes that might be collapsible
 #   3. Raw commands for each singleton shape — for diagnosis
 #
-# The DB path matches config.toml's cache_path default.
+# The DB path matches the approvals system's default location.
 
 set -euo pipefail
 
-DB="${APPROVALS_DB:-$HOME/.local/share/claude-approvals/decisions.db}"
+DB="${APPROVALS_DB:-$HOME/.local/share/claude-approvals/approvals.db}"
 HOURS="${1:-24}"
 
 if [[ ! -f "$DB" ]]; then
@@ -36,7 +36,7 @@ echo ""
 echo "=== SINGLETON SHAPES (hit only once — possible normalization gaps) ==="
 echo ""
 sqlite3 -header -column "$DB" <<SQL
-SELECT shape, raw_command, final_decision, source
+SELECT shape, raw_command, source, reason
 FROM events
 WHERE timestamp >= $CUTOFF
   AND shape IN (
@@ -92,7 +92,7 @@ echo ""
 echo "=== ALL SHAPES WITH HIT COUNTS (descending) ==="
 echo ""
 sqlite3 -header -column "$DB" <<SQL
-SELECT shape, COUNT(*) AS hits, final_decision, source
+SELECT shape, COUNT(*) AS hits, source, reason
 FROM events
 WHERE timestamp >= $CUTOFF
 GROUP BY shape
