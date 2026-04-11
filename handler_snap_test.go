@@ -77,6 +77,13 @@ func TestSnap(t *testing.T) {
 
 		// version
 		{"version", "snap version", "snap version"},
+
+		// Subshell as val flag argument (--channel)
+		{"channel subshell", "snap install --channel $(get-channel) vlc", "snap install --channel $(get-channel) vlc"},
+		// Subshell as num flag argument (--revision)
+		{"revision subshell", "snap revert core --revision $(get-rev)", "snap revert core --revision $(get-rev)"},
+		// Unknown subcommand falls back to generic classification
+		{"unknown subcommand", "snap run myapp", "snap run myapp"},
 	}
 
 	for _, tt := range tests {

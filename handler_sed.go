@@ -44,7 +44,7 @@ func handleSed(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				result = append(result, "<path>")
+				result = append(result, "<script>")
 				scriptAssigned = true
 				i++
 			}

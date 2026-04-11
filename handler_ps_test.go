@@ -26,6 +26,13 @@ func TestPs(t *testing.T) {
 		{"process group -g", "ps -g 42", "ps -g <grp>"},
 		{"terminal -t", "ps -t tty1", "ps -t <tty>"},
 
+		// Consuming flag at end of args (no next token)
+		{"trailing consuming flag", "ps -o", "ps -o"},
+		// Subshell as standalone token
+		{"subshell standalone", "ps $(echo aux)", "ps $(echo <str>)"},
+		// Subshell as next token after consuming flag
+		{"subshell after consuming flag", "ps -u $(whoami)", "ps -u $(whoami)"},
+
 		// Combinations
 		{"format and pid", "ps -o pid,args -p 42", "ps -o <fmt> -p <pid>"},
 		{"user and full", "ps -fu root", "ps -fu <user>"},

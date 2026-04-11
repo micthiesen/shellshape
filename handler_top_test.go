@@ -37,6 +37,36 @@ func TestTop(t *testing.T) {
 		{"bundled -Hp", "top -Hp 5678", "top -Hp <pid>"},
 		{"bundled -bn", "top -bn 3", "top -bn N"},
 
+		// Consuming flag at end of input (no value follows)
+		{"user trailing", "top -u", "top -u"},
+		{"pid trailing", "top -p", "top -p"},
+		{"sort trailing", "top -o", "top -o"},
+
+		// Numeric flag at end of input (no value follows)
+		{"iterations trailing", "top -n", "top -n"},
+		{"delay trailing", "top -d", "top -d"},
+		{"width trailing", "top -w", "top -w"},
+
+		// Bundled flags at end of input (no value follows)
+		{"bundled Hp trailing", "top -Hp", "top -Hp"},
+		{"bundled bn trailing", "top -bn", "top -bn"},
+
+		// Consuming flag with subshell value
+		{"user subshell", "top -u $(whoami)", "top -u $(whoami)"},
+		{"pid subshell", "top -p $(pgrep nginx)", "top -p $(pgrep nginx)"},
+		{"sort subshell", "top -o $(echo CPU)", "top -o $(echo <str>)"},
+
+		// Numeric flag with subshell value
+		{"iterations subshell", "top -n $(echo 5)", "top -n $(echo <str>)"},
+		{"delay subshell", "top -d $(calc)", "top -d $(calc)"},
+
+		// Bundled flag with subshell value
+		{"bundled Hp subshell", "top -Hp $(pgrep x)", "top -Hp $(pgrep x)"},
+		{"bundled bn subshell", "top -bn $(echo 3)", "top -bn $(echo <str>)"},
+
+		// Subshell as standalone token
+		{"subshell standalone", "top $(flags)", "top $(flags)"},
+
 		// Redirect
 		{"redirect output", "top -b -n 1 > output.txt", "top -b -n N > <path>"},
 	}

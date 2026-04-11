@@ -118,22 +118,22 @@ func handleGoTest(tokens []string) []string {
 		"-fuzztime": true,
 	}
 	pathFlags := map[string]bool{
-		"-coverprofile":  true,
-		"-cpuprofile":    true,
-		"-memprofile":    true,
-		"-mutexprofile":  true,
-		"-blockprofile":  true,
-		"-trace":         true,
-		"-outputdir":     true,
-		"-o":             true,
+		"-coverprofile": true,
+		"-cpuprofile":   true,
+		"-memprofile":   true,
+		"-mutexprofile": true,
+		"-blockprofile": true,
+		"-trace":        true,
+		"-outputdir":    true,
+		"-o":            true,
 	}
 	valFlags := map[string]bool{
-		"-covermode":       true,
-		"-coverpkg":        true,
-		"-benchtime":       true,
-		"-cpu":             true,
-		"-blockprofilerate": true,
-		"-memprofilerate":  true,
+		"-covermode":            true,
+		"-coverpkg":             true,
+		"-benchtime":            true,
+		"-cpu":                  true,
+		"-blockprofilerate":     true,
+		"-memprofilerate":       true,
 		"-mutexprofilefraction": true,
 	}
 	// merge build val flags
@@ -398,18 +398,18 @@ func handleGoMod(tokens []string) []string {
 
 	// go mod edit flags that consume a value
 	modEditValFlags := map[string]bool{
-		"-replace":    true,
-		"-require":    true,
+		"-replace":     true,
+		"-require":     true,
 		"-dropreplace": true,
 		"-droprequire": true,
-		"-exclude":    true,
+		"-exclude":     true,
 		"-dropexclude": true,
-		"-retract":    true,
+		"-retract":     true,
 		"-dropretract": true,
-		"-go":         true,
-		"-toolchain":  true,
-		"-json":       true,
-		"-fmt":        true,
+		"-go":          true,
+		"-toolchain":   true,
+		"-json":        true,
+		"-fmt":         true,
 	}
 
 	var result []string
@@ -532,33 +532,63 @@ func handleGoList(tokens []string) []string {
 	return result
 }
 
+// Flags for go tool subcommands (cover, pprof, trace) that consume a path arg.
+var goToolPathFlags = map[string]bool{
+	"-func": true, "-html": true, "-o": true,
+	"-http": true, // pprof: -http :8080 (actually a listen addr, but collapse)
+}
+
 func handleGoTool(tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	var result []string
 	seenTool := false
-	for i := 0; i < len(args); i++ {
+	i := 0
+	for i < len(args) {
 		tok := args[i]
 
 		if isSubshellToken(tok) {
 			result = append(result, tok)
+			i++
+			continue
+		}
+
+		// Handle fused -flag=value (e.g. -func=/tmp/cov.out)
+		if isFlagToken(tok) && strings.Contains(tok, "=") {
+			eqIdx := strings.IndexByte(tok, '=')
+			key := tok[:eqIdx]
+			if goToolPathFlags[key] {
+				result = append(result, key+"=<path>")
+			} else {
+				result = append(result, classifyToken(tok))
+			}
+			i++
+			continue
+		}
+
+		// Handle separate -flag value
+		if goToolPathFlags[tok] {
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 
 		if isFlagToken(tok) {
 			result = append(result, tok)
+			i++
 			continue
 		}
 
 		if !seenTool {
-			// First positional is the tool name (pprof, trace, dist) — structural
+			// First positional is the tool name (cover, pprof, trace, dist) — structural
 			result = append(result, tok)
 			seenTool = true
+			i++
 			continue
 		}
 
 		// After tool name, classify remaining tokens
 		result = append(result, classifyToken(tok))
+		i++
 	}
 
 	result = append(result, redirects...)

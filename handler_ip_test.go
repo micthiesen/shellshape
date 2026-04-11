@@ -52,6 +52,15 @@ func TestIP(t *testing.T) {
 		// tunnel
 		{"tunnel show", "ip tunnel show", "ip tunnel show"},
 
+		// subshell as globalValFlag argument
+		{"family subshell", "ip -f $(get-family) addr show", "ip -f $(get-family) addr show"},
+		// subshell as valKeyword argument
+		{"dev subshell", "ip link set dev $(get-dev) up", "ip link set dev $(get-dev) up"},
+		// subshell as numKeyword argument
+		{"mtu subshell", "ip link set dev eth0 mtu $(get-mtu)", "ip link set dev <val> mtu $(get-mtu)"},
+		// subshell as addrKeyword argument
+		{"address subshell", "ip link set dev eth0 address $(get-mac)", "ip link set dev <val> address $(get-mac)"},
+
 		// redirect preserved
 		{"with redirect", "ip addr show > /tmp/out.txt", "ip addr show > <path>"},
 	}

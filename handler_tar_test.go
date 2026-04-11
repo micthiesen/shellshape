@@ -39,6 +39,43 @@ func TestTar(t *testing.T) {
 
 		// Multiple excludes
 		{"multiple excludes", "tar -czf archive.tar.gz --exclude '*.log' --exclude '*.tmp' src/", "tar -czf <archive> --exclude <pattern> --exclude <pattern> <path>"},
+
+		// Value flags (--format, --owner, --group, etc.)
+		{"format flag", "tar -czf archive.tar.gz --format pax src/", "tar -czf <archive> --format <val> <path>"},
+		{"owner flag", "tar -czf archive.tar.gz --owner root src/", "tar -czf <archive> --owner <val> <path>"},
+		{"group flag", "tar -czf archive.tar.gz --group staff src/", "tar -czf <archive> --group <val> <path>"},
+		{"val flag at end", "tar -czf archive.tar.gz --format", "tar -czf <archive> --format"},
+
+		// Subshell as archive after -f/--file
+		{"subshell after -f", "tar -xf $(get-archive)", "tar -xf $(get-archive)"},
+		{"subshell after --file", "tar --extract --file $(get-archive)", "tar --extract --file $(get-archive)"},
+
+		// Subshell after path flag
+		{"subshell after -C", "tar -xf archive.tar -C $(get-dir)", "tar -xf <archive> -C $(get-dir)"},
+		{"subshell after --directory", "tar -xf archive.tar --directory $(get-dir)", "tar -xf <archive> --directory $(get-dir)"},
+
+		// Subshell after pattern flag
+		{"subshell after --exclude", "tar -czf archive.tar.gz --exclude $(get-pattern) src/", "tar -czf <archive> --exclude $(get-pattern) <path>"},
+		{"subshell after --include", "tar -czf archive.tar.gz --include $(get-pattern) src/", "tar -czf <archive> --include $(get-pattern) <path>"},
+
+		// Subshell as positional token in main loop
+		{"subshell positional", "tar -xf archive.tar $(get-files)", "tar -xf <archive> $(get-files)"},
+
+		// Subshell after bundle f
+		{"subshell after bundle f", "tar czf $(gen-name) src/", "tar czf $(gen-name) <path>"},
+
+		// Non-bundle first tokens (exercise isTarBundle false paths)
+		{"long flag first", "tar --verbose -xf archive.tar", "tar --verbose -xf <archive>"},
+		{"single char first", "tar v", "tar v"},
+		{"digits in bundle", "tar x2f archive.tar", "tar x2f <archive>"},
+		{"no mode letter bundle", "tar vz archive.tar", "tar vz <path>"},
+
+		// Block size numeric flag
+		{"block-size flag", "tar -xf archive.tar --block-size 512", "tar -xf <archive> --block-size N"},
+		{"b flag", "tar -xf archive.tar -b 20", "tar -xf <archive> -b N"},
+
+		// Redirects
+		{"redirect output", "tar -cf - src/ > backup.tar", "tar -cf <archive> <path> > <path>"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

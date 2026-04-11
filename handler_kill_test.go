@@ -20,6 +20,18 @@ func TestKill(t *testing.T) {
 		// List mode
 		{"list signals", "kill -l", "kill -l"},
 		{"list with exit status", "kill -l 1", "kill -l N"},
+		// Bare dash (not a numeric signal, treated as positional)
+		{"bare dash", "kill - 1234", "kill <pid>+"},
+		// Mixed digit-letter flag (not a valid numeric signal)
+		{"invalid numeric signal", "kill -9a 1234", "kill <pid>+"},
+		// Double-dash with subshell
+		{"double dash subshell", "kill -- $(pgrep nginx)", "kill -- $(pgrep nginx)"},
+		// Subshell as standalone token
+		{"subshell standalone", "kill $(pgrep nginx)", "kill $(pgrep nginx)"},
+		// -s with no following token
+		{"dash-s trailing", "kill -s", "kill -s"},
+		// -l followed by a letter flag (does not consume)
+		{"dash-l followed by flag", "kill -l -HUP", "kill -l -HUP"},
 		// Special pids
 		{"job spec", "kill %1", "kill <pid>"},
 		{"double dash", "kill -- -1", "kill -- <pid>"},

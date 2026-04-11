@@ -43,8 +43,13 @@ func handleStow(subcommand string, tokens []string) []string {
 				i++
 				continue
 			}
-			// Unknown --flag=value: preserve as-is.
-			result = append(result, tok)
+			// Unknown --flag=value: normalize numeric values.
+			val := tok[eqIdx+1:]
+			if numberRE.MatchString(val) {
+				result = append(result, flagName+"=N")
+			} else {
+				result = append(result, tok)
+			}
 			i++
 			continue
 		}

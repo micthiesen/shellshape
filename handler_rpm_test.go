@@ -41,6 +41,17 @@ func TestRpm(t *testing.T) {
 		{"force install", "rpm -ivh --force --nodeps package.rpm", "rpm -ivh --force --nodeps <path>"},
 		{"whatrequires", "rpm -q --whatrequires openssl", "rpm -q --whatrequires openssl"},
 
+		// Separate -q and -f flags (second-pass fileMode detection)
+		{"query file separate flags", "rpm -q -f /usr/bin/vim", "rpm -q -f <path>"},
+		// Separate -q and -p flags
+		{"query package separate flags", "rpm -q -p package.rpm", "rpm -q -p <path>"},
+		// Build mode detection
+		{"build spec", "rpm -bb mypackage.spec", "rpm -bb <path>"},
+		// subshell as path-flag argument
+		{"root subshell", "rpm --root $(get-root) -qa", "rpm --root $(get-root) -qa"},
+		// subshell as val-flag argument
+		{"queryformat subshell", "rpm --queryformat $(get-fmt) -qa", "rpm --queryformat $(get-fmt) -qa"},
+
 		// Edge cases
 		{"no args", "rpm", "rpm"},
 		{"define macro", "rpm --define 'dist .el8' -ba foo.spec", "rpm --define <val> -ba <path>"},

@@ -60,8 +60,8 @@ func handleTar(subcommand string, tokens []string) []string {
 		}
 
 		// Bundled flags like czf, xvzf (with or without leading dash).
-		// Detect: first token or a token that looks like a bundle of single letters.
-		if i == 0 && !strings.HasPrefix(tok, "--") && isTarBundle(tok) {
+		// At position 0, allow with or without leading dash. Later positions require dash.
+		if !strings.HasPrefix(tok, "--") && isTarBundle(tok) && (i == 0 || strings.HasPrefix(tok, "-")) {
 			bundle := tok
 			result = append(result, bundle)
 			i++
@@ -156,15 +156,16 @@ func handleTar(subcommand string, tokens []string) []string {
 }
 
 // isTarBundle returns true if the token looks like a tar bundled-flag word.
-// e.g., "czf", "xvzf", "-czf", "-xvzf". Must be all ASCII letters (after
-// stripping optional leading dash) and contain at least one tar mode letter.
+// e.g., "czf", "xvzf", "-czf", "-xvzf", "x2f". Must be all ASCII letters
+// or digits (after stripping optional leading dash) and contain at least one
+// tar mode letter.
 func isTarBundle(tok string) bool {
 	raw := strings.TrimPrefix(tok, "-")
 	if len(raw) < 2 {
 		return false
 	}
 	for _, c := range raw {
-		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
 			return false
 		}
 	}

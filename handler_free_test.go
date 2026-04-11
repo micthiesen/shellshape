@@ -45,6 +45,26 @@ func TestFree(t *testing.T) {
 		{"seconds equals", "free --seconds=5", "free --seconds=<val>"},
 		{"count equals", "free --count=10", "free --count=<val>"},
 
+		// Consuming flag at end of input (no value follows)
+		{"seconds short trailing", "free -s", "free -s"},
+		{"count short trailing", "free -c", "free -c"},
+		{"seconds long trailing", "free --seconds", "free --seconds"},
+		{"count long trailing", "free --count", "free --count"},
+
+		// Combined flag ending in consuming letter at end of input
+		{"combined trailing s", "free -hs", "free -hs"},
+		{"combined trailing c", "free -hc", "free -hc"},
+
+		// Combined flag ending in consuming letter with subshell value
+		{"combined s subshell", "free -hs $(calc)", "free -hs $(calc)"},
+		{"combined c subshell", "free -hc $(calc)", "free -hc $(calc)"},
+
+		// Subshell as standalone token
+		{"subshell standalone", "free $(flags)", "free $(flags)"},
+
+		// Consuming flag with subshell value
+		{"count subshell", "free -c $(echo 5)", "free -c $(echo <str>)"},
+
 		// Edge cases
 		{"redirect", "free -h > output.txt", "free -h > <path>"},
 		{"pipe ignored in shape", "free -m", "free -m"},

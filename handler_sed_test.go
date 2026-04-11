@@ -15,6 +15,16 @@ func TestSed(t *testing.T) {
 		{"in place", "sed -i 's/foo/bar/g' file.txt", "sed -i <sed-expr> <path>"},
 		{"sed -n single address", "sed -n 5p", "sed -n <sed-expr>"},
 		{"sed -n dollar address", "sed -n '$p'", "sed -n <sed-expr>"},
+		{"file flag short", "sed -f script.sed input.txt", "sed -f <script> <path>"},
+		{"file flag long", "sed --file script.sed input.txt", "sed --file <script> <path>"},
+		{"expression flag long", "sed --expression 's/a/b/' file.txt", "sed --expression <sed-expr> <path>"},
+		{"file flag at end", "sed -f", "sed -f"},
+		{"expression flag at end", "sed -e", "sed -e"},
+		{"subshell token", "sed $(dangerous-command) file.txt", "sed $(dangerous-command) <path>"},
+		{"redirect output", "sed 's/a/b/' input.txt > output.txt", "sed <sed-expr> <path> > <path>"},
+		{"multiple file flags", "sed -f a.sed -f b.sed input.txt", "sed -f <script> -f <script> <path>"},
+		{"file flag only", "sed -f script.sed", "sed -f <script>"},
+		{"expression and file flags", "sed -e 's/a/b/' -f script.sed input.txt", "sed -e <sed-expr> -f <script> <path>"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

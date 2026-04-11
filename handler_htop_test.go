@@ -42,6 +42,29 @@ func TestHtop(t *testing.T) {
 		{"delay and sort", "htop -d 20 -s PERCENT_CPU", "htop -d N -s <col>"},
 		{"tree no color user", "htop -t -C -u admin", "htop -t -C -u <user>"},
 
+		// Numeric flag at end of input (no value follows)
+		{"delay short trailing", "htop -d", "htop -d"},
+		{"highlight trailing", "htop -H", "htop -H"},
+
+		// Value flag at end of input (no value follows)
+		{"user short trailing", "htop -u", "htop -u"},
+		{"pid short trailing", "htop -p", "htop -p"},
+		{"sort short trailing", "htop -s", "htop -s"},
+		{"filter short trailing", "htop -F", "htop -F"},
+
+		// Numeric flag with subshell value
+		{"delay subshell", "htop -d $(echo 10)", "htop -d $(echo <str>)"},
+		{"highlight subshell", "htop --highlight-changes $(calc)", "htop --highlight-changes $(calc)"},
+
+		// Value flag with subshell value
+		{"user subshell", "htop -u $(whoami)", "htop -u $(whoami)"},
+		{"pid subshell", "htop -p $(pgrep foo)", "htop -p $(pgrep foo)"},
+		{"sort subshell", "htop --sort-key $(echo CPU)", "htop --sort-key $(echo <str>)"},
+		{"filter subshell", "htop -F $(echo nginx)", "htop -F $(echo <str>)"},
+
+		// Subshell as standalone token
+		{"subshell standalone", "htop $(flags)", "htop $(flags)"},
+
 		// Redirect
 		{"redirect", "htop -p 123 > out.txt", "htop -p <pid> > <path>"},
 	}

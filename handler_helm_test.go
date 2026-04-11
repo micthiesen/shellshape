@@ -51,6 +51,11 @@ func TestHelm(t *testing.T) {
 		{"rollback", "helm rollback my-release 2", "helm rollback my-release N"},
 		{"status", "helm status my-release", "helm status my-release"},
 		{"get values", "helm get values my-release", "helm get values my-release"},
+
+		// subshell as value-flag argument
+		{"set with subshell", "helm install my-release bitnami/nginx --set $(get-value)", "helm install my-release <path> --set $(get-value)"},
+		// subshell as path-flag argument
+		{"values file subshell", "helm install my-release bitnami/nginx -f $(find-values)", "helm install my-release <path> -f $(find-values)"},
 	}
 
 	for _, tt := range tests {

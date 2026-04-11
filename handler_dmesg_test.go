@@ -42,6 +42,19 @@ func TestDmesg(t *testing.T) {
 		{"human with facility", "dmesg -H -f kern", "dmesg -H -f <facility>"},
 		{"kernel json", "dmesg -kJ", "dmesg -kJ"},
 
+		// Subshell as standalone token (hits isSubshellToken in main loop)
+		{"subshell token", "dmesg $(get-flags)", "dmesg $(get-flags)"},
+
+		// Subshell as argument to each flag category
+		{"level subshell", "dmesg -l $(get-level)", "dmesg -l $(get-level)"},
+		{"facility subshell", "dmesg -f $(get-facility)", "dmesg -f $(get-facility)"},
+		{"size subshell", "dmesg -s $(calc-size)", "dmesg -s $(calc-size)"},
+		{"since subshell", "dmesg --since $(date-cmd)", "dmesg --since $(date-cmd)"},
+		{"time-format subshell", "dmesg --time-format $(get-fmt)", "dmesg --time-format $(get-fmt)"},
+
+		// Unexpected positional argument
+		{"positional path", "dmesg /var/log/messages", "dmesg <path>"},
+
 		// Redirect
 		{"redirect", "dmesg > /tmp/kern.log", "dmesg > <path>"},
 		{"pipe grep", "dmesg -T | grep error", "dmesg -T | grep <pattern>"},

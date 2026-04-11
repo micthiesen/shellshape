@@ -682,6 +682,78 @@ func TestSplitTopLevel(t *testing.T) {
 	})
 }
 
+func TestNormalizeCoreEdgeCases(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// shelxSplit: backslash at end of input (line 66-69)
+		{"trailing backslash", `echo hello\`, "echo <str>"},
+		// shelxSplit: backslash in double quotes not escaping special (line 42-43)
+		{"backslash non-special in dquotes", `echo "hello\nworld"`, "echo <str>"},
+
+		// normalizeSingleCommand: env-only command (line 122)
+		{"env only", "FOO=bar BAZ=qux", "FOO=<val> BAZ=<val>"},
+
+		// normalizeSingleCommand: shell script runner with dotted file (line 142-144)
+		{"bash dotted script", "bash script.sh arg1", "script.sh arg1"},
+
+		// normalizeSingleCommand: redirect herestring (line 170-171)
+		{"herestring redirect", "cat <<< hello", "cat <<< <str>"},
+
+		// normalizeSingleCommand: redirect standalone (line 177-180)
+		{"redirect standalone", "echo hello 2>&1", "echo <str> 2>&1"},
+
+		// fallbackNormalize coverage
+		{"unmatched single quote", "echo 'hello", "echo 'hello"},
+
+		// normalizeSubstitutions: whole subshell is opaque
+		{"nested subshell", "echo $(echo $(date))", "echo $(echo $(date))"},
+
+		// splitRedirects: various redirect forms
+		{"redirect with fd", "cmd 2> /tmp/err.log", "cmd 2> <path>"},
+
+		// collapseRepeatedPlaceholders: non-adjacent same placeholders
+		{"non-adjacent same", "cmd <path> -f <path>", "cmd <path> -f <path>"},
+
+		// Shell-as-script-runner with flag (should not consume as script)
+		{"bash with flag", "bash -c 'echo hello'", "bash -c <code>"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q)\n  got  %q\n  want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExecutableOfEdgeCases(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"", ""},
+		{"FOO=bar", ""},
+		{"FOO=bar cmd", "cmd"},
+		// ExecutableOf returns the raw token, not stripped
+		{"/usr/bin/python3 script.py", "/usr/bin/python3"},
+		{"cmd arg1 | cmd2 arg2", "cmd"},
+		{"cmd arg1 && cmd2", "cmd"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := ExecutableOf(tt.input)
+			if got != tt.want {
+				t.Errorf("ExecutableOf(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
 func contains(s, substr string) bool {
 	for i := 0; i <= len(s)-len(substr); i++ {
 		if s[i:i+len(substr)] == substr {

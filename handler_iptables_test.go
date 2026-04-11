@@ -49,6 +49,15 @@ func TestIptables(t *testing.T) {
 
 		// Destination and source together
 		{"src and dst", "iptables -A FORWARD -s 10.0.0.0/8 -d 172.16.0.0/12 -j ACCEPT", "iptables -A FORWARD -s <addr> -d <addr> -j ACCEPT"},
+
+		// Subshell as standalone token in args
+		{"subshell standalone", "iptables $(get-flags) -j ACCEPT", "iptables $(get-flags) -j ACCEPT"},
+		// Subshell as verbatim flag argument
+		{"subshell verbatim arg", "iptables -A INPUT -p $(get-proto) -j ACCEPT", "iptables -A INPUT -p $(get-proto) -j ACCEPT"},
+		// Subshell as val flag argument
+		{"subshell val arg", "iptables -A INPUT --dport $(get-port) -j ACCEPT", "iptables -A INPUT --dport $(get-port) -j ACCEPT"},
+		// Subshell as str flag argument
+		{"subshell str arg", "iptables -A INPUT -m comment --comment $(gen-comment) -j ACCEPT", "iptables -A INPUT -m comment --comment $(gen-comment) -j ACCEPT"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -36,6 +36,9 @@ func TestStow(t *testing.T) {
 		// Combined flags
 		{"verbose and simulate", "stow -n -v -d ~/dotfiles zsh", "stow -n -v -d <path> zsh"},
 		{"restow with target", "stow -R -t /usr/local zsh vim", "stow -R -t <path> zsh vim"},
+
+		// Numeric --flag=value normalizes the value
+		{"verbose flag=value", "stow --verbose=5 zsh", "stow --verbose=N zsh"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

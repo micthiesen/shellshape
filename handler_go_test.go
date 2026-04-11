@@ -128,6 +128,11 @@ func TestGo(t *testing.T) {
 		{"tool trace", "go tool trace trace.out", "go tool trace <dotted-id>"},
 		{"tool pprof path", "go tool pprof ./cpu.prof", "go tool pprof <path>"},
 		{"tool dist list", "go tool dist list", "go tool dist list"},
+		{"tool cover func fused", "go tool cover -func=/tmp/cov.out", "go tool cover -func=<path>"},
+		{"tool cover html fused", "go tool cover -html=/tmp/cov.out -o /tmp/cov.html", "go tool cover -html=<path> -o <path>"},
+		{"tool cover func separate", "go tool cover -func /tmp/cov.out", "go tool cover -func <path>"},
+		{"tool cover func subshell", "go tool cover -func $(get-file)", "go tool cover -func $(get-file)"},
+		{"tool cover unknown fused", "go tool cover -cpuprofile=cpu.out", "go tool cover -cpuprofile=cpu.out"},
 
 		// Shared build flags across subcommands
 		{"build p flag", "go build -p 4 .", "go build -p N ."},
@@ -138,6 +143,106 @@ func TestGo(t *testing.T) {
 		{"test redirect", "go test ./... > output.txt", "go test <path> > <path>"},
 		{"test stderr redirect", "go test ./... 2>&1", "go test <path> 2>&1"},
 		{"vet stderr", "go vet ./... 2>&1", "go vet <path> 2>&1"},
+
+		// Fused flag forms (go test specific)
+		{"test run=pattern fused", "go test -run=TestFoo ./...", "go test -run=<pattern> <path>"},
+		{"test coverprofile=path fused", "go test -coverprofile=cov.out ./...", "go test -coverprofile=<path> <path>"},
+		{"test coverpkg=val fused", "go test -coverpkg=./pkg/... ./...", "go test -coverpkg=<val> <path>"},
+
+		// Subshell in flag argument positions
+		{"test run subshell", "go test -run $(get-pattern) ./...", "go test -run $(get-pattern) <path>"},
+		{"test timeout subshell", "go test -timeout $(calc-timeout) ./...", "go test -timeout $(calc-timeout) <path>"},
+		{"test coverprofile subshell", "go test -coverprofile $(mktemp) ./...", "go test -coverprofile $(mktemp) <path>"},
+		{"test count subshell", "go test -count $(nproc) ./...", "go test -count $(nproc) <path>"},
+		{"test coverpkg subshell", "go test -coverpkg $(get-pkg) ./...", "go test -coverpkg $(get-pkg) <path>"},
+		{"build ldflags subshell", "go build -ldflags $(gen-flags) .", "go build -ldflags $(gen-flags) ."},
+		{"build o subshell", "go build -o $(get-path) .", "go build -o $(get-path) ."},
+
+		// Trailing flag with no arg
+		{"test trailing run", "go test -run", "go test -run"},
+		{"test trailing count", "go test -count", "go test -count"},
+
+		// go run edge cases
+		{"run subshell file", "go run $(find-main)", "go run $(find-main)"},
+		{"run with build flags", "go run -tags integration ./cmd/app arg1 arg2", "go run -tags <val> <path> arg1 arg2"},
+		{"run ldflags", "go run -ldflags \"-X main.v=1\" main.go", "go run -ldflags <val> <path>"},
+		{"run p flag", "go run -p 2 main.go", "go run -p N <path>"},
+		{"run subshell in flags", "go run -tags $(get-tags) main.go", "go run -tags $(get-tags) <path>"},
+
+		// go install edge cases
+		{"install with tags", "go install -tags netgo ./cmd/server", "go install -tags <val> <path>"},
+		{"install subshell", "go install $(get-pkg)", "go install $(get-pkg)"},
+		{"install ldflags", "go install -ldflags \"-s\" golang.org/x/tools/gopls@latest", "go install -ldflags <val> golang.org/x/tools/gopls@latest"},
+		{"install p flag", "go install -p 4 ./cmd/app", "go install -p N <path>"},
+
+		// go get edge cases
+		{"get subshell", "go get $(cat go.mod-dep)", "go get $(cat go.mod-dep)"},
+		{"get relative path", "go get ../other-module", "go get <path>"},
+
+		// go mod edge cases
+		{"mod edit subshell", "go mod edit -replace $(gen-replace)", "go mod edit -replace $(gen-replace)"},
+		{"mod subshell positional", "go mod why $(get-dep)", "go mod why $(get-dep)"},
+		{"mod edit go flag", "go mod edit -go 1.21", "go mod edit -go <val>"},
+		{"mod edit dropexclude", "go mod edit -dropexclude github.com/old/dep@v1.0", "go mod edit -dropexclude <val>"},
+		{"mod edit trailing flag", "go mod edit -require", "go mod edit -require"},
+
+		// go doc edge cases
+		{"doc subshell", "go doc $(get-symbol)", "go doc $(get-symbol)"},
+
+		// go env edge cases
+		{"env subshell", "go env $(get-var)", "go env $(get-var)"},
+		{"env multiple set", "go env -w GOBIN=/usr/local/bin GOPROXY=direct", "go env -w GOBIN=<val> GOPROXY=<val>"},
+
+		// go list edge cases
+		{"list with tags", "go list -tags integration ./...", "go list -tags <val> <path>"},
+		{"list subshell", "go list $(get-pattern)", "go list $(get-pattern)"},
+		{"list f subshell", "go list -f $(get-fmt) ./...", "go list -f $(get-fmt) <path>"},
+
+		// go tool edge cases
+		{"tool subshell", "go tool $(get-tool)", "go tool $(get-tool)"},
+
+		// go default handler edge cases
+		{"vet subshell", "go vet $(get-pkg)", "go vet $(get-pkg)"},
+		{"vet p flag", "go vet -p 4 ./...", "go vet -p N <path>"},
+		{"fmt subshell", "go fmt $(get-pkg)", "go fmt $(get-pkg)"},
+		{"generate tags", "go generate -tags wireinject ./...", "go generate -tags <val> <path>"},
+		{"default subshell flag arg", "go vet -tags $(get-tags) ./...", "go vet -tags $(get-tags) <path>"},
+		{"default trailing tags", "go vet -tags", "go vet -tags"},
+
+		// Unknown fused flag - classifyToken keeps it verbatim since it's a flag
+		{"test unknown fused flag", "go test -benchmem=true ./...", "go test -benchmem=true <path>"},
+
+		// go test subshell in test-specific fused positions
+		{"test fused timeout subshell", "go test -timeout=30s ./...", "go test -timeout=<duration> <path>"},
+
+		// go build subshell in build-specific flag positions
+		{"build tags subshell", "go build -tags $(get-tags) .", "go build -tags $(get-tags) ."},
+		{"build subshell positional", "go build $(get-pkg)", "go build $(get-pkg)"},
+
+		// go install build flag subshells
+		{"install tags subshell", "go install -tags $(get-tags) ./cmd/app", "go install -tags $(get-tags) <path>"},
+		{"install subshell positional", "go install $(get-url)", "go install $(get-url)"},
+
+		// go mod subshell in edit flag positions
+		{"mod edit replace subshell", "go mod edit -replace $(gen-replace)", "go mod edit -replace $(gen-replace)"},
+		{"mod edit flag subshell", "go mod edit -go $(get-version)", "go mod edit -go $(get-version)"},
+		{"mod edit boolean flag", "go mod edit -json", "go mod edit -json"},
+
+		// go tool subshell and flag handling
+		{"tool flag before name", "go tool -n pprof", "go tool -n pprof"},
+		{"tool subshell after name", "go tool pprof $(get-profile)", "go tool pprof $(get-profile)"},
+
+		// go install boolean flag
+		{"install verbose", "go install -v golang.org/x/tools/gopls@latest", "go install -v golang.org/x/tools/gopls@latest"},
+		{"install parent path", "go install ../other/cmd", "go install <path>"},
+
+		// go mod more coverage
+		{"mod edit boolean only", "go mod edit -print", "go mod edit -print"},
+		{"mod why subshell", "go mod why $(get-dep)", "go mod why $(get-dep)"},
+		{"mod edit go subshell", "go mod edit -go $(get-version)", "go mod edit -go $(get-version)"},
+
+		// go run boolean flag after positional
+		{"run race file args", "go run -race main.go --port 8080", "go run -race <path> --port 8080"},
 
 		// Edge cases
 		{"bare go", "go", "go"},
