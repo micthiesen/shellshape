@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("biome", handleBiome)
+}
+
 // handleBiome handles biome lint/format/check/ci/migrate.
 // Tokens arrive after the subcommand has already been consumed.
 // --config-path takes a path argument.

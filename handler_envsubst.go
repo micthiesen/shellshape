@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("envsubst", handleEnvsubst)
+}
+
 // handleEnvsubst handles the envsubst command.
 // The only flag is -v/--variables (boolean). An optional positional
 // SHELL-FORMAT string collapses to <val>. Subshells are kept verbatim.

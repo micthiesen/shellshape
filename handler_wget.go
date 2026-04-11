@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("wget", handleWget)
+}
+
 // handleWget handles the wget command.
 // URL positionals are classified via classifyToken (producing <http-uri>, etc.).
 // Output/log flags (-o, -a, -O, -i, -P, etc.) collapse the next arg to <path>.
@@ -61,16 +65,16 @@ func handleWget(subcommand string, tokens []string) []string {
 		"--proxy-user": true, "--proxy-password": true,
 		"-B": true, "--base": true,
 		"--method": true,
-		"-A": true, "--accept": true,
+		"-A":       true, "--accept": true,
 		"-R": true, "--reject": true,
 		"--accept-regex": true, "--reject-regex": true,
 		"-D": true, "--domains": true,
 		"--exclude-domains": true,
-		"-I": true, "--include-directories": true,
+		"-I":                true, "--include-directories": true,
 		"-X": true, "--exclude-directories": true,
 		"--follow-tags": true, "--ignore-tags": true,
 		"--report-speed": true, "--progress": true,
-		"--prefer-family": true,
+		"--prefer-family":  true,
 		"--local-encoding": true, "--remote-encoding": true,
 		"--default-page": true, "--compression": true,
 		"--regex-type": true, "--restrict-file-names": true,

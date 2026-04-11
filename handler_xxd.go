@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("xxd", handleXxd)
+}
+
 // handleXxd handles the xxd hex dump command.
 // Numeric flags (-l, -s, -c, -g, -o and long forms) consume next arg as N.
 // The -n/--name flag consumes next arg as <val>.

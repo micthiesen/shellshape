@@ -2,7 +2,7 @@ package shellshape
 
 func init() {
 	for _, name := range []string{"shasum", "md5sum", "sha1sum", "sha224sum", "sha256sum", "sha384sum", "sha512sum"} {
-		handlers[name] = handleShasum
+		Register(name, handleShasum)
 	}
 }
 

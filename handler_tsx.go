@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("tsx", handleTsx)
+}
+
 // handleTsx handles the tsx (TypeScript Execute) command.
 // Subcommands: watch.
 // Flags --tsconfig consume a path argument.

@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("make", handleMake, HandlerOptions{HasSubcommands: true})
+}
+
 // handleMake handles make arguments after the subcommand (target) extraction.
 // Since make is in subcommandExecutables, the first token (typically a target
 // name) is already consumed by the framework and kept verbatim.

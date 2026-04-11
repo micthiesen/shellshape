@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("cat", handleCat)
+}
+
 // handleCat handles the cat command.
 // All flags are boolean (no flag consumes an argument).
 // All positionals are file paths, classified via classifyToken.

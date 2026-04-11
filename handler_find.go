@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("find", handleFind)
+}
+
 // handleFind handles the find command.
 // Pattern flags (-name, -iname, -path, etc.) make the next arg <pattern>
 // unless it's a subshell (preserved verbatim).

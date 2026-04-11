@@ -80,19 +80,6 @@ func ExecutableOf(shape string) string {
 	return ""
 }
 
-// Executables whose second positional token is a subcommand.
-var subcommandExecutables = map[string]bool{
-	"git": true, "gh": true, "pnpm": true, "npm": true, "yarn": true,
-	"bun": true, "cargo": true, "go": true, "docker": true,
-	"kubectl": true, "aws": true, "gcloud": true, "az": true,
-	"terraform": true, "helm": true, "make": true,
-	"pip": true, "pip3": true, "uv": true, "poetry": true, "brew": true,
-	"apt": true, "dnf": true, "pacman": true, "snap": true,
-	"systemctl": true, "launchctl": true, "sst": true, "pulumi": true,
-	"ollama": true, "lms": true, "fnm": true,
-	"tmux": true,
-}
-
 // Interpreters that accept inline code via -c / -e / --command.
 var interpretersWithCodeFlag = map[string]bool{
 	"python": true, "python3": true, "node": true, "deno": true,
@@ -162,7 +149,7 @@ func normalizeSingleCommand(seg string) string {
 
 	var subcommand string
 	// Subcommand detection.
-	if subcommandExecutables[exe] && i < len(tokens) {
+	if hasSubcommands(exe) && i < len(tokens) {
 		subcommand = tokens[i]
 		result = append(result, tokens[i])
 		i++

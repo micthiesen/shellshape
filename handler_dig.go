@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("dig", handleDig)
+}
+
 // handleDig handles the dig DNS lookup utility.
 // @server tokens become @<server>. Query options (+short, +trace, etc.) are
 // preserved verbatim. DNS record types (A, MX, AAAA, etc.) are preserved.

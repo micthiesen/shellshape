@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("tar", handleTar)
+}
+
 // handleTar handles the tar command.
 // Recognizes bundled flags (czf, xvzf) with or without a leading dash.
 // If the bundle contains 'f', the next token is consumed as <path> (the archive file).
@@ -32,13 +36,13 @@ func handleTar(subcommand string, tokens []string) []string {
 	// Flags whose next argument is numeric.
 	numericFlags := map[string]bool{
 		"--strip-components": true,
-		"-b": true, "--block-size": true,
+		"-b":                 true, "--block-size": true,
 	}
 
 	// Flags whose next argument is a generic value.
 	valFlags := map[string]bool{
 		"--format": true,
-		"--owner": true, "--group": true,
+		"--owner":  true, "--group": true,
 		"--gname": true, "--uname": true,
 		"--gid": true, "--uid": true,
 	}

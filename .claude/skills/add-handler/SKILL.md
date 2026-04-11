@@ -78,12 +78,16 @@ go test ./... -run TestCommandName -v
 
 ## Step 4: Implement the handler
 
-Create `handler_$ARGUMENTS.go`. Use this template:
+Create `handler_$ARGUMENTS.go`. The handler self-registers via `init()`, so no other files need to be modified. Use this template:
 
 ```go
 package shellshape
 
-func handleCommandName(tokens []string) []string {
+func init() {
+    Register("$ARGUMENTS", handleCommandName)
+}
+
+func handleCommandName(subcommand string, tokens []string) []string {
     args, redirects := splitRedirects(tokens)
 
     var result []string
@@ -91,6 +95,24 @@ func handleCommandName(tokens []string) []string {
 
     result = append(result, redirects...)
     return result
+}
+```
+
+If the command has aliases (like grep/egrep/fgrep), register all of them in init():
+
+```go
+func init() {
+    for _, name := range []string{"$ARGUMENTS", "alias1", "alias2"} {
+        Register(name, handleCommandName)
+    }
+}
+```
+
+If the command has subcommands (like `docker run`, `git commit`), pass `HandlerOptions`:
+
+```go
+func init() {
+    Register("$ARGUMENTS", handleCommandName, HandlerOptions{HasSubcommands: true})
 }
 ```
 
@@ -103,20 +125,7 @@ Key rules:
 
 Reference `handler_grep.go` for a handler with flag-consuming arguments, or `handler_echo.go` for a simple positional-collapsing handler.
 
-## Step 5: Register the handler
-
-Add the executable name(s) to the registry in `handler.go`:
-
-```go
-var handlers = map[string]handlerFunc{
-    // ... existing handlers ...
-    "$ARGUMENTS": handleCommandName,
-}
-```
-
-If the command has aliases (like grep/egrep/fgrep), register all of them pointing to the same function.
-
-## Step 6: Run tests and iterate
+## Step 5: Run tests and iterate
 
 ```bash
 go vet ./... && go test ./... -v
@@ -129,6 +138,5 @@ All tests must pass, including the existing ones (no regressions). If a test fai
 - [ ] Handler test file with 8+ test cases covering common usage
 - [ ] At least one collision test (different data → same shape)
 - [ ] Subshell safety test (mandatory, never skip)
-- [ ] Handler implementation
-- [ ] Registered in handler.go
+- [ ] Handler implementation with `init()` self-registration
 - [ ] `go vet ./... && go test ./...` passes clean

@@ -2,6 +2,10 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	Register("cut", handleCut)
+}
+
 var cutFusedRangeRE = regexp.MustCompile(`^-([bcf])(.+)$`)
 var cutFusedDelimRE = regexp.MustCompile(`^-d(.+)$`)
 

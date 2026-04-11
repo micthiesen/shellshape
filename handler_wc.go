@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("wc", handleWc)
+}
+
 // handleWc handles the wc command.
 // All flags are boolean (no flag takes an argument).
 // All positional arguments are file paths.

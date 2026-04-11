@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("vitest", handleVitest)
+}
+
 // handleVitest handles vitest test runner commands.
 // Pattern flags (-t, --testNamePattern, --grep) make the next arg <pattern>.
 // Path flags (--config, -c, --root, --dir, --outputFile) make the next arg <path>.

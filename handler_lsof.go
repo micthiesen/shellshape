@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("lsof", handleLsof)
+}
+
 // handleLsof handles the lsof command.
 // -i takes an optional network spec (collapse to <net-spec> if present).
 // -p (PID), -u (user), -c (command name), -d (FD numbers) consume the next token.

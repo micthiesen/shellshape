@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"ping", "ping6"} {
+		Register(name, handlePing)
+	}
+}
+
 // handlePing handles ping and ping6.
 // Numeric flags (-c, -G, -g, -h, -i, -l, -m, -s, -t, -T, -W, -z) collapse next arg to N.
 // Value flags (-b, -I, -k, -K, -M, -P, -p, -S) collapse next arg to <val>.

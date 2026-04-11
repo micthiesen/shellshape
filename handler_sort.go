@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("sort", handleSort)
+}
+
 // longFlagValued lists long flags whose =value should be collapsed to =<val>.
 var sortLongFlagsWithValue = map[string]bool{
 	"--key": true, "--field-separator": true, "--buffer-size": true,

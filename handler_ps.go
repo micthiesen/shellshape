@@ -2,9 +2,15 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("ps", handlePs)
+}
+
 // handlePs handles the ps command.
 // Flags that consume the next token get specific placeholders:
-//   -o/-O → <fmt>, -p → <pid>, -u/-U → <user>, -G → <gid>, -g → <grp>, -t → <tty>
+//
+//	-o/-O → <fmt>, -p → <pid>, -u/-U → <user>, -G → <gid>, -g → <grp>, -t → <tty>
+//
 // Bundled flags like -fu are detected: if the last letter is a consuming flag,
 // the next token is consumed with the appropriate placeholder.
 // BSD-style option strings (like "aux") are preserved verbatim as structural.

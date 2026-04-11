@@ -10,7 +10,7 @@ go fmt ./...                # Format code
 go run ./cmd/shellshape     # Run the CLI
 ```
 
-**Always run `go vet ./... && go test ./...` after making changes.**
+**Always run `go fmt ./... && go vet ./... && go test ./...` after making changes.**
 
 ## Code Style
 

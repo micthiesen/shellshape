@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("aws", handleAws, HandlerOptions{HasSubcommands: true})
+}
+
 // handleAws handles aws CLI commands.
 // Tokens arrive after the first subcommand (service name like s3, lambda, ec2)
 // since aws is in subcommandExecutables. The first positional is kept verbatim
@@ -18,14 +22,14 @@ func handleAws(subcommand string, tokens []string) []string {
 
 	// Boolean flags (no argument consumed).
 	booleanFlags := map[string]bool{
-		"--debug":           true,
-		"--no-verify-ssl":   true,
-		"--no-paginate":     true,
-		"--no-sign-request": true,
-		"--recursive":       true,
-		"--dryrun":          true,
-		"--dry-run":         true,
-		"--delete":          true,
+		"--debug":            true,
+		"--no-verify-ssl":    true,
+		"--no-paginate":      true,
+		"--no-sign-request":  true,
+		"--recursive":        true,
+		"--dryrun":           true,
+		"--dry-run":          true,
+		"--delete":           true,
 		"--only-show-errors": true,
 		"--no-include-email": true,
 		"--force":            true,

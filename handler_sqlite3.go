@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"sqlite3", "sqlite"} {
+		Register(name, handleSqlite3)
+	}
+}
+
 // handleSqlite3 handles sqlite3 (and aliases like sqlite).
 // Usage: sqlite3 [options] [database] [SQL]
 // First positional is the database path (<path>).

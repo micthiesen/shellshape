@@ -2,6 +2,10 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	Register("chmod", handleChmod)
+}
+
 var chmodModeRE = regexp.MustCompile(`^[0-7]{3,4}$`)
 var chmodSymbolicRE = regexp.MustCompile(`^[ugoa]*[=+-][rwxXstugo]*(,[ugoa]*[=+-][rwxXstugo]*)*$`)
 

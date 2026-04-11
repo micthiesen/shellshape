@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("eslint", handleEslint)
+}
+
 // handleEslint handles the eslint linter.
 // Path flags (--config/-c, --ignore-path, --output-file/-o, --cache-location)
 // collapse their argument to <path>.
@@ -17,8 +21,8 @@ func handleEslint(subcommand string, tokens []string) []string {
 		"--cache-location": true,
 	}
 	valFlags := map[string]bool{
-		"--ext": true,
-		"--rule": true,
+		"--ext":    true,
+		"--rule":   true,
 		"--format": true, "-f": true,
 	}
 	numericFlags := map[string]bool{

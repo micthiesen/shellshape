@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("mkdir", handleMkdir)
+}
+
 // handleMkdir handles the mkdir command.
 // -m/--mode consumes the next token as <mode>.
 // -p, -v are boolean flags.

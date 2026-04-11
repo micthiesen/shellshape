@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("tee", handleTee)
+}
+
 // handleTee handles the tee command.
 // All flags are boolean (-a, -i). All positionals are output file paths
 // and collapse to <path>. Subshells are kept verbatim.

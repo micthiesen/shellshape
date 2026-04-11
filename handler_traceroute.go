@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"traceroute", "tracepath"} {
+		Register(name, handleTraceroute)
+	}
+}
+
 // handleTraceroute handles traceroute and tracepath.
 // Numeric flags (-m, -q, -w, -p, -f, -M, -t, -z) collapse next arg to N.
 // Value flags (-s, -i, -g, -A, -P) collapse next arg to <val>.

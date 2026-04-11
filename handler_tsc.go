@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"tsc", "tsgo"} {
+		Register(name, handleTsc)
+	}
+}
+
 // handleTsc handles tsc (TypeScript compiler).
 // Path flags (-p, --project, --outDir, etc.) consume the next token as <path>.
 // Value flags (--target, --module, etc.) consume the next token as <val>.

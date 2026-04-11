@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("du", handleDu)
+}
+
 // handleDu handles the du (disk usage) command.
 // -d/--max-depth consume a numeric argument (N).
 // -B/--block-size consume a numeric argument (N).

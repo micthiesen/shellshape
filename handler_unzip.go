@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("unzip", handleUnzip)
+}
+
 // handleUnzip handles the unzip command.
 // The first positional argument is the archive file (<archive>).
 // Subsequent positionals are member patterns to extract (<pattern>).

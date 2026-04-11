@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("touch", handleTouch)
+}
+
 // handleTouch handles the touch command.
 // -A takes a time adjustment value, -d takes a date string, -t takes a timestamp,
 // -r takes a reference file path. Boolean flags: -a, -c, -h, -m.

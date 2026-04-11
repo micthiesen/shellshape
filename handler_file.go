@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("file", handleFile)
+}
+
 // handleFile handles the file command (determine file type).
 // Flags -m/-M/--magic-file, -f/--files-from consume a path argument.
 // Flags -F/--separator, -e/--exclude, -P consume a value argument.

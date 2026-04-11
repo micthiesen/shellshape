@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"ln", "link"} {
+		Register(name, handleLn)
+	}
+}
+
 // handleLn handles ln and link commands.
 // All flags are boolean (-s, -f, -F, -L, -P, -h, -i, -n, -v, -w).
 // All positionals are file paths (source files and target), classified via classifyToken.

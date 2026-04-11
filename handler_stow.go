@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("stow", handleStow)
+}
+
 // handleStow handles GNU stow.
 // Path flags (-d, --dir, -t, --target) consume next arg as <path>.
 // Value flags (--ignore, --defer, --override) consume next arg as <val>.

@@ -2,6 +2,10 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	Register("paste", handlePaste)
+}
+
 var pasteFusedDelimRE = regexp.MustCompile(`^-d(.+)$`)
 
 // handlePaste handles the paste command.

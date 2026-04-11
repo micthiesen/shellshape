@@ -2,6 +2,12 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	for _, name := range []string{"head", "tail"} {
+		Register(name, handleTail)
+	}
+}
+
 var tailNumericRE = regexp.MustCompile(`^[+-]?\d+[bckKMGTPE]?$`)
 
 // handleTail handles the tail command.

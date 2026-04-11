@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("whois", handleWhois)
+}
+
 // handleWhois handles the whois command.
 // -h (host) consumes the next token as <host>.
 // -p (port) consumes the next token as N.

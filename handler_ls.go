@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("ls", handleLs)
+}
+
 // handleLs handles the ls command.
 // -D is the only flag that consumes the next token (date format string).
 // All other flags are boolean. All positionals are paths.

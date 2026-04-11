@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("curl", handleCurl)
+}
+
 // handleCurl handles the curl command.
 // URL positionals are classified via classifyToken (producing <http-uri>, etc.).
 // Data flags (-d, --data, --json, -F, etc.) collapse the next arg to <data>.
@@ -51,14 +55,14 @@ func handleCurl(subcommand string, tokens []string) []string {
 		"-m": true, "--max-time": true,
 		"--connect-timeout": true, "--expect100-timeout": true,
 		"--happy-eyeballs-timeout-ms": true,
-		"--keepalive-time": true,
-		"--max-redirs": true, "--max-filesize": true,
+		"--keepalive-time":            true,
+		"--max-redirs":                true, "--max-filesize": true,
 		"--retry": true, "--retry-delay": true, "--retry-max-time": true,
 		"-Y": true, "--speed-limit": true,
 		"-y": true, "--speed-time": true,
 		"--parallel-max": true,
 		"--tftp-blksize": true,
-		"-C": true, "--continue-at": true,
+		"-C":             true, "--continue-at": true,
 	}
 
 	strFlags := map[string]bool{
@@ -79,7 +83,7 @@ func handleCurl(subcommand string, tokens []string) []string {
 		"--ciphers": true, "--curves": true,
 		"--tls-max": true, "--tls13-ciphers": true,
 		"--proxy-tls13-ciphers": true,
-		"--tlsauthtype": true, "--tlsuser": true, "--tlspassword": true,
+		"--tlsauthtype":         true, "--tlsuser": true, "--tlspassword": true,
 		"--proxy-tlsauthtype": true, "--proxy-tlsuser": true, "--proxy-tlspassword": true,
 		"--limit-rate": true, "--rate": true,
 		"--local-port": true, "-r": true, "--range": true,
@@ -89,7 +93,7 @@ func handleCurl(subcommand string, tokens []string) []string {
 		"--ftp-method": true, "--ftp-ssl-ccc-mode": true,
 		"-P": true, "--ftp-port": true, "--ftp-account": true,
 		"--ftp-alternative-to-user": true,
-		"--login-options": true, "--delegation": true,
+		"--login-options":           true, "--delegation": true,
 		"--mail-from": true, "--mail-rcpt": true, "--mail-auth": true,
 		"--sasl-authzid": true, "--service-name": true,
 		"--proxy-service-name": true, "--socks5-gssapi-service": true,
@@ -103,7 +107,7 @@ func handleCurl(subcommand string, tokens []string) []string {
 		"--pass": true, "--trace-config": true,
 		"--create-file-mode": true, "--variable": true,
 		"--haproxy-clientip": true,
-		"-Q": true, "--quote": true,
+		"-Q":                 true, "--quote": true,
 		"--socks4": true, "--socks4a": true,
 		"--socks5": true, "--socks5-hostname": true,
 		"-h": true, "--help": true,

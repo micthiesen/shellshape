@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("bun", handleBun, HandlerOptions{HasSubcommands: true})
+}
+
 // handleBun handles the bun command.
 // The subcommand (run, test, install, build, x) is already extracted by
 // normalizeSingleCommand. This handler processes the remaining tokens after

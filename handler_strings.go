@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("strings", handleStrings)
+}
+
 // handleStrings handles the strings command.
 // Flags -n/--bytes take a numeric argument (-> N).
 // Flags -t/--radix take a value argument (o/d/x), preserved verbatim.

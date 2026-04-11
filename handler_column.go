@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("column", handleColumn)
+}
+
 // handleColumn handles the column command.
 // Value flags: -s (delimiter), -c (column width, numeric), -o (output separator),
 // -N/--table-columns, -R/--table-right, -H/--table-hide.

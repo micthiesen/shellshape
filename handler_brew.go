@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("brew", handleBrew, HandlerOptions{HasSubcommands: true})
+}
+
 // handleBrew handles brew (Homebrew) subcommand arguments.
 // Since brew is in subcommandExecutables, the subcommand (install, uninstall,
 // upgrade, search, info, list, tap, untap, services, etc.) is already consumed.

@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("stat", handleStat)
+}
+
 // handleStat handles the stat command.
 // Format flags (-f, -t, -c, --format, --printf) consume the next arg as <fmt>.
 // Boolean flags (-L, -x, -F, -l, -n, -q, -r, -s) are kept verbatim.

@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("yq", handleYq)
+}
+
 // handleYq handles yq (mikefarah/yq) commands.
 // The first positional becomes <filter> (the yq expression).
 // Subcommands eval/eval-all/ea are passed through verbatim.

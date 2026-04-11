@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("tmux", handleTmux, HandlerOptions{HasSubcommands: true})
+}
+
 // handleTmux handles tmux subcommand arguments.
 // Since tmux is in subcommandExecutables, the subcommand (new-session, attach,
 // send-keys, split-window, etc.) is already consumed before this handler runs.

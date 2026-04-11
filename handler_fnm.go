@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("fnm", handleFnm, HandlerOptions{HasSubcommands: true})
+}
+
 // handleFnm handles fnm (Fast Node Manager) subcommand arguments.
 // Since fnm is in subcommandExecutables, the subcommand (install, use, default,
 // alias, etc.) is already consumed before this handler is called.
@@ -21,8 +25,8 @@ func handleFnm(subcommand string, tokens []string) []string {
 	// Subcommands where the first positional is a version.
 	versionSubcommands := map[string]bool{
 		"install": true, "i": true,
-		"use": true,
-		"default": true,
+		"use":       true,
+		"default":   true,
 		"uninstall": true, "uni": true,
 		"alias": true,
 	}

@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"pnpm", "npm", "yarn"} {
+		Register(name, handlePnpm, HandlerOptions{HasSubcommands: true})
+	}
+}
+
 // handlePnpm handles pnpm, npm, and yarn commands.
 // The subcommand (install, add, remove, run, exec, dlx, etc.) is already
 // extracted by normalizeSingleCommand and passed via the subcommand parameter.

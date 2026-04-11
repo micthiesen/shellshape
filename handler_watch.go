@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("watch", handleWatch)
+}
+
 // handleWatch handles the watch command.
 // POSIX option processing: flags are parsed until the first non-option argument,
 // then everything else is the watched command (classified generically via classifyToken).

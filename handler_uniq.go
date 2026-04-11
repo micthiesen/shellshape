@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("uniq", handleUniq)
+}
+
 // handleUniq handles the uniq command.
 // Numeric flags (-f/--skip-fields, -s/--skip-chars) consume the next token as N.
 // -D/--all-repeated optionally takes a septype keyword (none, prepend, separate).

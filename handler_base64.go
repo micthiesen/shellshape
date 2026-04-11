@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"base64", "b64encode", "b64decode"} {
+		Register(name, handleBase64)
+	}
+}
+
 // handleBase64 handles base64, b64encode, b64decode.
 // -o/--output takes a path argument.
 // -w/--wrap, -b/--break take a numeric argument.

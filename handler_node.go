@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("node", handleNode)
+}
+
 // handleNode handles node (and compatible runtimes).
 // -e/-c take inline code. -r/--require, --loader, --env-file, --import take
 // paths. -C/--conditions take a value. The first positional is the script

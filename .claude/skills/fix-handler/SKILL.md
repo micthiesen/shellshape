@@ -27,7 +27,7 @@ Run this in a test or via the CLI to see the actual output. Then determine:
 - Is the problem in a per-executable handler, the generic token classifier (`classifyToken`), or the preprocessing pipeline (shlex, heredocs, comments, splitting)?
 
 To figure out where the bug is:
-1. Check if the executable has a handler registered in `handler.go`
+1. Check if the executable has a handler (look for `handler_<exe>.go` and its `init()` registration)
 2. If it does, read the handler and trace through the token walk mentally
 3. If it doesn't, the issue is in `classifyToken` in `token.go` or in preprocessing (`preprocess.go`, `split.go`, `shlex.go`)
 

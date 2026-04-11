@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("terraform", handleTerraform, HandlerOptions{HasSubcommands: true})
+}
+
 // handleTerraform handles terraform subcommand arguments.
 // Since terraform is in subcommandExecutables, the subcommand (init, plan,
 // apply, destroy, import, state, output, etc.) is already consumed before

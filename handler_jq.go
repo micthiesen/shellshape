@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("jq", handleJq)
+}
+
 // handleJq handles jq commands.
 // The first positional becomes <filter> (unless -f/--from-file was used).
 // --arg/--argjson consume two args: <name> <val>.

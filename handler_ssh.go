@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("ssh", handleSsh)
+}
+
 // handleSsh handles the ssh command.
 // The first positional becomes <host> (hostnames, user@host, IPs).
 // Remaining positionals after the host are remote command tokens, collapsed to <cmd>.

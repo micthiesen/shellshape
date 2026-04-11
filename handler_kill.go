@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("kill", handleKill)
+}
+
 // handleKill handles the kill command.
 // Signal flags (-9, -HUP, -SIGTERM, -s NAME) are kept verbatim as structural.
 // -l is kept verbatim; if followed by a number it becomes N.

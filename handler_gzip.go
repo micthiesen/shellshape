@@ -2,6 +2,12 @@ package shellshape
 
 import "strings"
 
+func init() {
+	for _, name := range []string{"gzip", "gunzip", "zcat"} {
+		Register(name, handleGzip)
+	}
+}
+
 // handleGzip handles gzip, gunzip, zcat.
 // -S/--suffix consumes the next token as <suffix>.
 // Compression level flags -1 through -9 are preserved verbatim.

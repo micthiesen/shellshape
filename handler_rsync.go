@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("rsync", handleRsync)
+}
+
 // handleRsync handles rsync commands.
 // -e/--rsh consumes the next arg as <rsh> (remote shell).
 // -f/--filter, --exclude, --include consume the next arg as <filter>.

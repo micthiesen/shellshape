@@ -2,6 +2,10 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	Register("comm", handleComm)
+}
+
 var commFlagRE = regexp.MustCompile(`^-[123]+i?$`)
 
 // handleComm handles the comm command.

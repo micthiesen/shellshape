@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("df", handleDf)
+}
+
 // handleDf handles the df (disk free) command.
 // -T/--type and -t (legacy) consume a filesystem type value (<type>).
 // -x/--exclude-type consumes a filesystem type value (<type>).

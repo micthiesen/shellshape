@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"dotenvx", "dotenv"} {
+		Register(name, handleDotenvx)
+	}
+}
+
 // handleDotenvx handles dotenvx and dotenv (dotenv-cli).
 // Both are env var loaders that wrap another command.
 // Flags before "--" belong to dotenvx/dotenv; after "--" everything is the

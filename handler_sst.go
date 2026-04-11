@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("sst", handleSst, HandlerOptions{HasSubcommands: true})
+}
+
 // handleSst handles sst (SST Ion/v3) infrastructure commands.
 // The subcommand (dev, deploy, build, remove, secret, shell, tunnel, etc.)
 // is already consumed by the normalizer since sst is in subcommandExecutables.

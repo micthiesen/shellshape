@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"rm", "unlink"} {
+		Register(name, handleRm)
+	}
+}
+
 // handleRm handles the rm (and unlink) command.
 // All flags are boolean (no flag consumes an argument).
 // After "--", all remaining tokens are treated as positionals.

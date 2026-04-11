@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"npx", "bunx", "pnpx"} {
+		Register(name, handleNpx)
+	}
+}
+
 // handleNpx handles npx and bunx (npm/bun package runners).
 // Flags before the command: --yes/-y, --no (boolean), --package/-p (pkg name),
 // --call/-c (code string), --workspace/-w (workspace name).

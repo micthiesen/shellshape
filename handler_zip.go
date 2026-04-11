@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("zip", handleZip)
+}
+
 // handleZip handles the zip command.
 // First positional is the archive name (<archive>).
 // Remaining positionals are input files/paths (classifyToken).

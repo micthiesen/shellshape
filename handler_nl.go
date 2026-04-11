@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("nl", handleNl)
+}
+
 // handleNl handles the nl (line numbering) command.
 // Style flags (-b, -f, -h) have their value preserved for fixed styles (a/t/n)
 // but collapse p<expr> to p<pattern>.

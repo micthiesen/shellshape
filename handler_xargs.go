@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("xargs", handleXargs)
+}
+
 // handleXargs handles the xargs command.
 // xargs flags (-I, -J, -E take strings; -n, -P, -L, -s, -R, -S take numbers)
 // are normalized with appropriate placeholders. Boolean flags (-0, -o, -p, -r,

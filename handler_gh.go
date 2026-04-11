@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("gh", handleGh, HandlerOptions{HasSubcommands: true})
+}
+
 // handleGh handles the gh (GitHub CLI) command.
 // gh is in subcommandExecutables, so the first subcommand (pr, issue, repo, api)
 // is already extracted. This handler receives tokens after that first subcommand.
@@ -25,7 +29,7 @@ func handleGh(subcommand string, tokens []string) []string {
 		"--assignee": true, "-a": true,
 		"--label": true, "-l": true,
 		"--json": true,
-		"--jq": true, "-q": true,
+		"--jq":   true, "-q": true,
 		"--base": true, "-B": true,
 		"--head": true, "-H": true,
 		"--milestone": true, "-m": true,
@@ -34,20 +38,20 @@ func handleGh(subcommand string, tokens []string) []string {
 		"--template": true, "-T": true,
 		"--body-file": true, "-F": true,
 		"--state": true, "-s": true,
-		"--author": true,
-		"--search": true,
-		"--sort": true,
-		"--order": true,
+		"--author":   true,
+		"--search":   true,
+		"--sort":     true,
+		"--order":    true,
 		"--hostname": true,
-		"-f": true, "--raw-field": true,
+		"-f":         true, "--raw-field": true,
 		"--field": true,
-		"-X": true, "--method": true,
-		"--header": true,
-		"--recover": true,
-		"--app": true,
-		"--color": true,
-		"--language": true,
-		"--topic": true,
+		"-X":      true, "--method": true,
+		"--header":     true,
+		"--recover":    true,
+		"--app":        true,
+		"--color":      true,
+		"--language":   true,
+		"--topic":      true,
 		"--visibility": true,
 	}
 

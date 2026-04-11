@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("host", handleHost)
+}
+
 // handleHost handles the host DNS lookup utility.
 // -t (type) and -c (class) consume the next token verbatim (structural).
 // -R, -W, -N consume the next token as N (numeric).

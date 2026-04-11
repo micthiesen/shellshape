@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("sed", handleSed)
+}
+
 // handleSed handles the sed command.
 // Expression flags (-e, --expression) make the next arg <sed-expr>.
 // File flags (-f, --file) make the next arg <path>.

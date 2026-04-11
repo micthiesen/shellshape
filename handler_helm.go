@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("helm", handleHelm, HandlerOptions{HasSubcommands: true})
+}
+
 // handleHelm handles helm subcommand arguments.
 // Since helm is in subcommandExecutables, the subcommand (install, upgrade,
 // uninstall, list, repo, etc.) is already consumed before this handler is called.
@@ -15,29 +19,29 @@ func handleHelm(_ string, tokens []string) []string {
 	valFlags := map[string]bool{
 		"--set": true, "--set-string": true, "--set-file": true,
 		"--set-json": true,
-		"-n": true, "--namespace": true,
-		"--version": true,
-		"--timeout": true,
+		"-n":         true, "--namespace": true,
+		"--version":      true,
+		"--timeout":      true,
 		"--kube-context": true,
-		"--description": true,
-		"--output": true, "-o": true,
-		"--filter": true,
-		"--repo": true,
-		"--username": true,
-		"--password": true,
-		"--ca-file": true,
-		"--cert-file": true,
-		"--key-file": true,
+		"--description":  true,
+		"--output":       true, "-o": true,
+		"--filter":      true,
+		"--repo":        true,
+		"--username":    true,
+		"--password":    true,
+		"--ca-file":     true,
+		"--cert-file":   true,
+		"--key-file":    true,
 		"--history-max": true,
 	}
 
 	// Flags whose next token is a path.
 	pathFlags := map[string]bool{
 		"-f": true, "--values": true,
-		"--kubeconfig": true,
-		"--post-renderer": true,
-		"--registry-config": true,
-		"--repository-cache": true,
+		"--kubeconfig":        true,
+		"--post-renderer":     true,
+		"--registry-config":   true,
+		"--repository-cache":  true,
 		"--repository-config": true,
 	}
 

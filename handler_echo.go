@@ -1,5 +1,11 @@
 package shellshape
 
+func init() {
+	for _, name := range []string{"echo", "printf"} {
+		Register(name, handleEcho)
+	}
+}
+
 // handleEcho handles echo and printf commands.
 // Flags before the first positional are preserved. All positional string args
 // collapse to a single <str>. Subshells are kept verbatim.

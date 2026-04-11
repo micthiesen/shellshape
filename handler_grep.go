@@ -2,6 +2,12 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	for _, name := range []string{"grep", "egrep", "fgrep", "rg", "ag", "ack"} {
+		Register(name, handleGrep)
+	}
+}
+
 var fusedNumericRE = regexp.MustCompile(`^-([ABCm])(\d+)$`)
 
 // handleGrep handles grep, egrep, fgrep, rg, ag, ack.

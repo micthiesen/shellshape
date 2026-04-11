@@ -2,6 +2,12 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	for _, name := range []string{"man", "apropos", "whatis"} {
+		Register(name, handleMan)
+	}
+}
+
 var sectionRE = regexp.MustCompile(`^[1-9][a-z]*$`)
 
 // handleMan handles man, apropos, whatis.

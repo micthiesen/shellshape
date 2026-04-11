@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("prettier", handlePrettier)
+}
+
 // handlePrettier handles the prettier code formatter.
 // Flags like --config, --ignore-path take a path argument.
 // Flags like --parser, --trailing-comma, --arrow-parens take a value argument.

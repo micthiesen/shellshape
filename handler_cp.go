@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("cp", handleCp)
+}
+
 // handleCp handles the cp command.
 // All flags are boolean (no flag consumes an argument).
 // All positionals are file paths, classified via classifyToken.

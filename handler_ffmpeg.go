@@ -2,6 +2,12 @@ package shellshape
 
 import "strings"
 
+func init() {
+	for _, name := range []string{"ffmpeg", "ffprobe"} {
+		Register(name, handleFfmpeg)
+	}
+}
+
 // handleFfmpeg handles ffmpeg and ffprobe commands.
 // -i (input path) can appear multiple times; each consumes the next arg as <path>.
 // Codec flags (-c, -c:v, -c:a, -codec, -vcodec, -acodec) keep their value verbatim

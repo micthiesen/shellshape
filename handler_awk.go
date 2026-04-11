@@ -2,6 +2,12 @@ package shellshape
 
 import "strings"
 
+func init() {
+	for _, name := range []string{"awk", "gawk", "mawk", "nawk"} {
+		Register(name, handleAwk)
+	}
+}
+
 // handleAwk handles awk and gawk.
 // -F fs: field separator, next arg becomes <val>. Fused form -F: also accepted.
 // -v var=value: variable assignment, next arg becomes <val>.

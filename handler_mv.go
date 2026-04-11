@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("mv", handleMv)
+}
+
 // handleMv handles the mv command.
 // All flags are boolean except -t/--target-directory (consumes next arg as
 // path) and -S/--suffix (consumes next arg as string).

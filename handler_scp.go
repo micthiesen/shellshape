@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("scp", handleScp)
+}
+
 // isScpRemote detects scp remote specs: user@host:path, host:path, or bare user@host:
 func isScpRemote(tok string) bool {
 	// Must contain a colon (but not ://, which is a URI)

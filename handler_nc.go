@@ -2,6 +2,12 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	for _, name := range []string{"nc", "netcat", "ncat"} {
+		Register(name, handleNc)
+	}
+}
+
 var portRE = regexp.MustCompile(`^\d+(-\d+)?$`)
 
 // handleNc handles nc, netcat, and ncat.

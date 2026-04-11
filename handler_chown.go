@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("chown", handleChown)
+}
+
 // handleChown handles the chown command.
 // The owner[:group] spec is preserved verbatim because it defines
 // the intent of the command. File arguments are collapsed to <path>.

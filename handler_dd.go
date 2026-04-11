@@ -2,6 +2,10 @@ package shellshape
 
 import "strings"
 
+func init() {
+	Register("dd", handleDd)
+}
+
 // handleDd handles the dd command.
 // dd uses key=value operands instead of traditional flags.
 // Path operands (if=, of=) collapse to key=<path>.

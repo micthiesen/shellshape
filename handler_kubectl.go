@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("kubectl", handleKubectl, HandlerOptions{HasSubcommands: true})
+}
+
 // handleKubectl handles kubectl subcommand arguments.
 // Since kubectl is in subcommandExecutables, the subcommand (get, describe,
 // apply, delete, logs, exec, etc.) is already consumed before this handler.
@@ -45,11 +49,11 @@ func handleKubectl(subcommand string, tokens []string) []string {
 		"--context":  true,
 		"--sort-by":  true,
 		"--template": true, "--go-template": true,
-		"--type":     true,
-		"--image":    true,
-		"--replicas": true,
-		"--port":     true,
-		"--timeout":  true,
+		"--type":            true,
+		"--image":           true,
+		"--replicas":        true,
+		"--port":            true,
+		"--timeout":         true,
 		"--grace-period":    true,
 		"--service-account": true,
 		"--cluster":         true,
@@ -60,7 +64,7 @@ func handleKubectl(subcommand string, tokens []string) []string {
 	// Flags whose values collapse to <path>.
 	pathFlags := map[string]bool{
 		"-f": true, "--filename": true,
-		"--kubeconfig": true,
+		"--kubeconfig":            true,
 		"--certificate-authority": true,
 		"--client-certificate":    true,
 		"--client-key":            true,
@@ -71,26 +75,26 @@ func handleKubectl(subcommand string, tokens []string) []string {
 	booleanFlags := map[string]bool{
 		"-A": true, "--all-namespaces": true,
 		"-w": true, "--watch": true,
-		"--watch-only": true,
-		"--all":        true,
-		"--force":      true,
-		"--recursive":  true,
-		"--dry-run":    true,
-		"--no-headers": true,
+		"--watch-only":  true,
+		"--all":         true,
+		"--force":       true,
+		"--recursive":   true,
+		"--dry-run":     true,
+		"--no-headers":  true,
 		"--show-labels": true,
-		"-it": true, "-ti": true,
+		"-it":           true, "-ti": true,
 		"-i": true, "--stdin": true,
 		"-t": true, "--tty": true,
 		"--cascade":    true,
 		"--overwrite":  true,
 		"--privileged": true,
-		"-d": true,
-		"--prune":   true,
-		"--record":  true,
-		"--verbose": true,
-		"-v":        true,
-		"--version": true,
-		"--help":    true,
+		"-d":           true,
+		"--prune":      true,
+		"--record":     true,
+		"--verbose":    true,
+		"-v":           true,
+		"--version":    true,
+		"--help":       true,
 	}
 
 	var result []string

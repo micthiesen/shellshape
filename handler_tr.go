@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("tr", handleTr)
+}
+
 // handleTr handles the tr (translate characters) command.
 // All flags (-C, -c, -d, -s, -u) are boolean and preserved verbatim.
 // Positional arguments (string1 and string2) are character set specs

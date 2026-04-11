@@ -1,5 +1,9 @@
 package shellshape
 
+func init() {
+	Register("openssl", handleOpenssl)
+}
+
 // handleOpenssl handles the openssl command.
 // The subcommand (req, x509, s_client, enc, etc.) is already extracted by
 // normalizeSingleCommand. This handler processes the remaining tokens after
@@ -40,7 +44,7 @@ func handleOpenssl(subcommand string, tokens []string) []string {
 		"-reqopt": true, "-dateopt": true,
 		"-provider": true, "-provparam": true, "-propquery": true,
 		"-provider-path": true,
-		"-cipher": true, "-keygen_engine": true,
+		"-cipher":        true, "-keygen_engine": true,
 		"-copy_extensions": true, "-ext": true,
 		"-checkhost": true, "-checkemail": true, "-checkip": true,
 		"-starttls": true, "-dane_tlsa_domain": true, "-dane_tlsa_rrdata": true,

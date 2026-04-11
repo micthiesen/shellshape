@@ -2,6 +2,10 @@ package shellshape
 
 import "regexp"
 
+func init() {
+	Register("diff", handleDiff)
+}
+
 var fusedDiffNumericRE = regexp.MustCompile(`^-([CUW])(\d+)$`)
 
 // handleDiff handles the diff command.
