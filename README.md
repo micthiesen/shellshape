@@ -66,19 +66,6 @@ shellshape < commands.txt
 | `# comment` | stripped | Comments are noise |
 | `\`+newline | joined | Line continuations |
 
-## Per-command handlers
-
-The generic tokenizer handles most commands. Handlers add knowledge
-about specific commands where positional arguments have known semantics:
-
-| Handler | Commands | What it knows |
-|---|---|---|
-| echo | `echo`, `printf` | All positionals collapse to `<str>` |
-| grep | `grep`, `egrep`, `rg`, `ag`, `ack` | First positional is `<pattern>`, `-A`/`-B`/`-C` take numeric args |
-| sed | `sed` | Script expressions collapse to `<sed-expr>` |
-| find | `find` | `-name`/`-path` args are `<pattern>`, positionals are paths |
-| sqlite3 | `sqlite3`, `sqlite` | First positional is `<path>` (database), second is `<sql>` |
-
 ### Subshell safety
 
 Subshell expressions like `$(...)` are recursively normalized but never
@@ -139,6 +126,11 @@ command on Unix-like systems.
 - **Shell history deduplication**: cluster semantically identical commands
 - **Security classification**: smaller input space, better accuracy
 - **Rate limiting**: count executions by shape, not by exact string
+
+## Alternatives
+
+Using an LLM. But it's slower and not deterministic. So why not just get an LLM
+to write the rules carefully once instead?
 
 ## License
 
