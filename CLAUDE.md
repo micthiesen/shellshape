@@ -3,11 +3,11 @@
 ## Quick Reference
 
 ```bash
-go build ./...    # Build all packages
-go test ./...     # Run all tests
-go vet ./...      # Static analysis
-go fmt ./...      # Format code
-go run .          # Run the main package
+go build ./...              # Build all packages
+go test ./...               # Run all tests
+go vet ./...                # Static analysis
+go fmt ./...                # Format code
+go run ./cmd/shellshape     # Run the CLI
 ```
 
 **Always run `go vet ./... && go test ./...` after making changes.**

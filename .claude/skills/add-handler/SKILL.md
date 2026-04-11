@@ -1,0 +1,134 @@
+---
+name: add-handler
+description: Add a new shellshape handler for a specific command (e.g. curl, awk, docker, jq)
+argument-hint: <executable-name>
+---
+
+# Add a new shellshape handler
+
+You are adding a handler for `$ARGUMENTS` to the shellshape normalizer. Follow this process exactly.
+
+## Step 1: Research the command
+
+Understand how `$ARGUMENTS` is actually used. You need to know:
+
+- Which flags take arguments (and what kind: paths, patterns, numbers, expressions, URLs)
+- Which flags are boolean (no argument)
+- What the positional arguments mean (is the first one special? are the rest files?)
+- Whether it has subcommands (like `docker run` vs `docker build`)
+- Common real-world invocations
+
+Do this research by:
+
+1. Run `man $ARGUMENTS 2>/dev/null | head -200` or `$ARGUMENTS --help 2>&1 | head -80` to get the flag reference
+2. Search the web for common usage patterns and examples
+3. Think about what tokens are **data** (should collapse) vs **structure** (should stay verbatim)
+
+## Step 2: Design the normalization rules
+
+Before writing any code, write out your plan:
+
+- What placeholder does the "main" positional get? (e.g. `<pattern>` for grep, `<sed-expr>` for sed, `<filter>` for jq)
+- Which flags consume the next token, and what placeholder does it get?
+- Are there any flags that take numeric arguments (should become `N`)?
+- Are there subcommands that change the argument grammar?
+- What should the shape look like for 5-10 common invocations?
+
+Share this plan with the user before proceeding.
+
+## Step 3: Write the test file first (TDD)
+
+Create `handler_$ARGUMENTS_test.go`. Follow the exact pattern from existing handler tests.
+
+Structure your tests in these categories:
+
+```go
+func TestCommandName(t *testing.T) {
+    tests := []struct {
+        name  string
+        input string
+        want  string
+    }{
+        // Basic usage
+        // Flags with arguments
+        // Multiple positionals
+        // Edge cases
+    }
+    // ...
+
+    // COLLISION TESTS: different data values → same shape
+    t.Run("different X collide", func(t *testing.T) { ... })
+
+    // SAFETY TEST: subshell must not collapse (one per handler, mandatory)
+    t.Run("subshell not collapsed", func(t *testing.T) {
+        benign := Normalize("$ARGUMENTS literal-arg")
+        subshell := Normalize("$ARGUMENTS $(dangerous-command)")
+        if benign == subshell {
+            t.Error("subshell must produce different shape than literal")
+        }
+    })
+}
+```
+
+Run the tests. They should fail. That's correct.
+
+```bash
+go test ./... -run TestCommandName -v
+```
+
+## Step 4: Implement the handler
+
+Create `handler_$ARGUMENTS.go`. Use this template:
+
+```go
+package shellshape
+
+func handleCommandName(tokens []string) []string {
+    args, redirects := splitRedirects(tokens)
+
+    var result []string
+    // ... your logic here ...
+
+    result = append(result, redirects...)
+    return result
+}
+```
+
+Key rules:
+- Always call `splitRedirects(tokens)` first, append redirects at end
+- Always check `isSubshellToken(tok)` BEFORE collapsing any positional to a placeholder
+- Use `isFlagToken(tok)` to distinguish flags from positionals
+- Use `classifyToken(tok)` for positionals that should get generic classification (usually file paths)
+- Walk tokens with an index variable (`i`), not `range`, when flags consume next args
+
+Reference `handler_grep.go` for a handler with flag-consuming arguments, or `handler_echo.go` for a simple positional-collapsing handler.
+
+## Step 5: Register the handler
+
+Add the executable name(s) to the registry in `handler.go`:
+
+```go
+var handlers = map[string]handlerFunc{
+    // ... existing handlers ...
+    "$ARGUMENTS": handleCommandName,
+}
+```
+
+If the command has aliases (like grep/egrep/fgrep), register all of them pointing to the same function.
+
+## Step 6: Run tests and iterate
+
+```bash
+go vet ./... && go test ./... -v
+```
+
+All tests must pass, including the existing ones (no regressions). If a test fails, fix the handler, not the test (unless you got the expected shape wrong in Step 3).
+
+## Checklist before done
+
+- [ ] Handler test file with 8+ test cases covering common usage
+- [ ] At least one collision test (different data → same shape)
+- [ ] Subshell safety test (mandatory, never skip)
+- [ ] Handler implementation
+- [ ] Registered in handler.go
+- [ ] `go vet ./... && go test ./...` passes clean
