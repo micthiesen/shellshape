@@ -37,22 +37,12 @@ func handleWatch(subcommand string, tokens []string) []string {
 
 		if parsingFlags {
 			if numericFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "N")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "N")
 				continue
 			}
 
 			if pathFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "<path>")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "<path>")
 				continue
 			}
 

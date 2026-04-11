@@ -47,6 +47,15 @@ func handleSort(subcommand string, tokens []string) []string {
 		"--compress-program": true,
 	}
 
+	categories := []flagCategory{
+		{keyFlags, "<key>"},
+		{sepFlags, "<sep>"},
+		{sizeFlags, "<size>"},
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+		{cmdFlags, "<cmd>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -71,63 +80,8 @@ func handleSort(subcommand string, tokens []string) []string {
 			}
 		}
 
-		if keyFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<key>")
-				i++
-			}
-			continue
-		}
-
-		if sepFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<sep>")
-				i++
-			}
-			continue
-		}
-
-		if sizeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<size>")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if cmdFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<cmd>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

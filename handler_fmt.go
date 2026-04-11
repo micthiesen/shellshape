@@ -32,22 +32,12 @@ func handleFmt(subcommand string, tokens []string) []string {
 		}
 
 		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		if stringFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<str>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<str>")
 			continue
 		}
 

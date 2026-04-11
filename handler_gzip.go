@@ -31,12 +31,7 @@ func handleGzip(subcommand string, tokens []string) []string {
 		}
 
 		if suffixFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<suffix>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<suffix>")
 			continue
 		}
 

@@ -65,16 +65,7 @@ func handleParted(subcommand string, tokens []string) []string {
 
 		// Flags that consume the next token.
 		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

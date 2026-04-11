@@ -63,12 +63,7 @@ func handleMkfs(subcommand string, tokens []string) []string {
 		}
 
 		if labelFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<label>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<label>")
 			continue
 		}
 

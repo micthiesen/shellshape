@@ -1,7 +1,5 @@
 package shellshape
 
-import "strings"
-
 func init() {
 	Register("terraform", handleTerraform, HandlerOptions{HasSubcommands: true})
 }
@@ -61,6 +59,12 @@ func handleTerraform(subcommand string, tokens []string) []string {
 		"-parallelism": true,
 	}
 
+	categories := []flagCategory{
+		{valFlags, "<val>"},
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -79,54 +83,14 @@ func handleTerraform(subcommand string, tokens []string) []string {
 		}
 
 		// Check for -flag=value syntax (single-dash terraform flags).
-		if eqIdx := strings.Index(tok, "="); eqIdx > 0 && strings.HasPrefix(tok, "-") {
-			flagPart := tok[:eqIdx]
-			if valFlags[flagPart] || pathFlags[flagPart] || numericFlags[flagPart] {
-				result = append(result, flagPart+"=<val>")
-				i++
-				continue
-			}
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
+		if norm, ok := consumeFusedFlag(tok, categories); ok {
+			result = append(result, norm)
 			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

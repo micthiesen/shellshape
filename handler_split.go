@@ -33,34 +33,19 @@ func handleSplit(subcommand string, tokens []string) []string {
 
 		// Flags that consume a numeric argument
 		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		// -b consumes a size argument (e.g. 10M, 512k)
 		if tok == "-b" {
-			result = append(result, "-b")
-			i++
-			if i < len(args) {
-				result = append(result, "<size>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<size>")
 			continue
 		}
 
 		// -p consumes a pattern argument
 		if tok == "-p" {
-			result = append(result, "-p")
-			i++
-			if i < len(args) {
-				result = append(result, "<pattern>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<pattern>")
 			continue
 		}
 
@@ -111,34 +96,19 @@ func handleCsplit(subcommand string, tokens []string) []string {
 
 		// -f consumes a prefix argument
 		if tok == "-f" {
-			result = append(result, "-f")
-			i++
-			if i < len(args) {
-				result = append(result, "<prefix>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<prefix>")
 			continue
 		}
 
 		// -n consumes a numeric argument
 		if tok == "-n" {
-			result = append(result, "-n")
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		// -b consumes a suffix format argument (GNU extension)
 		if tok == "-b" {
-			result = append(result, "-b")
-			i++
-			if i < len(args) {
-				result = append(result, "<format>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<format>")
 			continue
 		}
 

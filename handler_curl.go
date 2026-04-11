@@ -113,6 +113,16 @@ func handleCurl(subcommand string, tokens []string) []string {
 		"-h": true, "--help": true,
 	}
 
+	categories := []flagCategory{
+		{dataFlags, "<data>"},
+		{headerFlags, "<header>"},
+		{methodFlags, "<method>"},
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+		{strFlags, "<str>"},
+		{valFlags, "<val>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -124,73 +134,8 @@ func handleCurl(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if dataFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<data>")
-				i++
-			}
-			continue
-		}
-
-		if headerFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<header>")
-				i++
-			}
-			continue
-		}
-
-		if methodFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<method>")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if strFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<str>")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

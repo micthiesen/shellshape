@@ -126,6 +126,11 @@ Key rules:
 - Use `isFlagToken(tok)` to distinguish flags from positionals
 - Use `classifyToken(tok)` for positionals that should get generic classification (usually file paths)
 - Walk tokens with an index variable (`i`), not `range`, when flags consume next args
+- Use the shared utilities from `handler.go` for flag processing (read the file to see what's available):
+  - `consumeFlagArg(tok, args, i, result, "<placeholder>")` to consume a flag and its next token (handles subshell preservation automatically)
+  - `flagCategory` + `matchFlagCategory` to replace repetitive if/else chains when you have 3+ flag categories
+  - `consumeFusedFlag(tok, categories)` to handle `--flag=value` syntax
+- When a handler has 3+ flag categories (e.g. pathFlags, valFlags, numericFlags), define a `categories` slice and use `matchFlagCategory` in the loop instead of sequential if blocks
 
 Reference `handler_grep.go` for a handler with flag-consuming arguments, or `handler_echo.go` for a simple positional-collapsing handler.
 

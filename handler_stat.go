@@ -29,12 +29,7 @@ func handleStat(subcommand string, tokens []string) []string {
 		}
 
 		if formatFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<fmt>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<fmt>")
 			continue
 		}
 

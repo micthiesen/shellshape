@@ -43,22 +43,12 @@ func handleAwk(subcommand string, tokens []string) []string {
 		}
 
 		if fsFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 
 		if varFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

@@ -36,32 +36,17 @@ func handleDu(subcommand string, tokens []string) []string {
 		}
 
 		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		if thresholdFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<threshold>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<threshold>")
 			continue
 		}
 
 		if patternFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<pattern>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<pattern>")
 			continue
 		}
 

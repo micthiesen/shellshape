@@ -59,6 +59,13 @@ func handleFfmpeg(_ string, tokens []string) []string {
 		"-stats": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{filterFlags, "<filter>"},
+		{numericFlags, "N"},
+		{valFlags, "<val>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -70,33 +77,14 @@ func handleFfmpeg(_ string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
 		// Codec flags: -c, -c:v, -c:a, -c:<anything>, -codec, -vcodec, -acodec
-		if isCodecFlag(tok) {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				// Keep codec value verbatim
-				result = append(result, args[i])
-				i++
-			}
-			continue
-		}
-
-		if verbatimFlags[tok] {
+		// Keep codec value verbatim (structural choice).
+		if isCodecFlag(tok) || verbatimFlags[tok] {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
@@ -108,43 +96,13 @@ func handleFfmpeg(_ string, tokens []string) []string {
 
 		// Bitrate flags: -b, -b:v, -b:a
 		if isBitrateFlag(tok) {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 
-		// Filter flags: -filter, -filter:v, -filter:a, -filter:<anything>
-		if filterFlags[tok] || isFilterFlag(tok) {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<filter>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+		// Filter flags with stream specifiers: -filter:v, -filter:a, -filter:<spec>
+		if isFilterFlag(tok) {
+			result, i = consumeFlagArg(tok, args, i, result, "<filter>")
 			continue
 		}
 

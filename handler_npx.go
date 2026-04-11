@@ -37,32 +37,17 @@ func handleNpx(subcommand string, tokens []string) []string {
 		// Before the command name, handle flags that consume next token.
 		if !commandSeen {
 			if pkgFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "<pkg>")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "<pkg>")
 				continue
 			}
 
 			if codeFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "<code>")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "<code>")
 				continue
 			}
 
 			if valFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "<val>")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "<val>")
 				continue
 			}
 

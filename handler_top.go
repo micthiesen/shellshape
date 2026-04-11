@@ -46,30 +46,12 @@ func handleTop(subcommand string, tokens []string) []string {
 			lastChar := tok[len(tok)-1]
 
 			if placeholder, ok := consumingFlags[lastChar]; ok {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					if isSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, placeholder)
-					}
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, placeholder)
 				continue
 			}
 
 			if numericFlags[lastChar] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					if isSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "N")
-					}
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "N")
 				continue
 			}
 		}

@@ -29,23 +29,13 @@ func handleMkdir(subcommand string, tokens []string) []string {
 		}
 
 		if modeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<mode>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<mode>")
 			continue
 		}
 
 		// Bundled short flags ending in 'm' (e.g. -pm, -pvm): the 'm' consumes next arg.
 		if isFlagToken(tok) && !strings.HasPrefix(tok, "--") && strings.HasSuffix(tok, "m") {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<mode>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<mode>")
 			continue
 		}
 

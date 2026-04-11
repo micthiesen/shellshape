@@ -30,17 +30,21 @@ func handleMake(subcommand string, tokens []string) []string {
 		"-l": true, "--load-average": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 
 	// If the subcommand was actually a flag that consumes an argument,
 	// the first remaining token is the dangling flag argument.
 	i := 0
-	if pathFlags[subcommand] && i < len(args) && !isSubshellToken(args[i]) {
-		result = append(result, "<path>")
-		i++
-	} else if numericFlags[subcommand] && i < len(args) && !isSubshellToken(args[i]) {
-		result = append(result, "N")
-		i++
+	if placeholder, ok := matchFlagCategory(subcommand, categories); ok {
+		if i < len(args) && !isSubshellToken(args[i]) {
+			result = append(result, placeholder)
+			i++
+		}
 	}
 
 	for i < len(args) {
@@ -53,46 +57,22 @@ func handleMake(subcommand string, tokens []string) []string {
 		}
 
 		// Long flag with =value
+		if norm, ok := consumeFusedFlag(tok, categories); ok {
+			result = append(result, norm)
+			i++
+			continue
+		}
+		// Unknown fused long flag: collapse value to <val>
 		if strings.HasPrefix(tok, "--") {
 			if idx := strings.Index(tok, "="); idx >= 0 {
-				prefix := tok[:idx]
-				if pathFlags[prefix] {
-					result = append(result, prefix+"=<path>")
-				} else if numericFlags[prefix] {
-					result = append(result, prefix+"=N")
-				} else {
-					result = append(result, tok[:idx]+"=<val>")
-				}
+				result = append(result, tok[:idx]+"=<val>")
 				i++
 				continue
 			}
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

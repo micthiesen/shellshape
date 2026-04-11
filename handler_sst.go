@@ -52,12 +52,7 @@ func handleSst(subcommand string, tokens []string) []string {
 		}
 
 		if collapseValueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

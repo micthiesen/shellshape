@@ -38,6 +38,13 @@ func handleSs(_ string, tokens []string) []string {
 		"-4": true, "-6": true,
 	}
 
+	categories := []flagCategory{
+		{valueFlags, "<val>"},
+		{pathFlags, "<path>"},
+		{stateKeywords, "<state>"},
+		{addrKeywords, "<addr>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -50,59 +57,14 @@ func handleSs(_ string, tokens []string) []string {
 			continue
 		}
 
-		if valueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
 		if digitFlags[tok] || isFlagToken(tok) {
 			result = append(result, tok)
 			i++
-			continue
-		}
-
-		// State/exclude keyword: next token is a state name.
-		if stateKeywords[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<state>")
-				}
-				i++
-			}
-			continue
-		}
-
-		// Address keyword: next token is an address.
-		if addrKeywords[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<addr>")
-				}
-				i++
-			}
 			continue
 		}
 

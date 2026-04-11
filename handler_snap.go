@@ -63,30 +63,12 @@ func handleSnap(subcommand string, tokens []string) []string {
 
 		// Handle --flag=value forms.
 		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 
 		if numFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 

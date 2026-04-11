@@ -33,12 +33,7 @@ func handleCut(subcommand string, tokens []string) []string {
 
 		// -d with separate argument
 		if tok == "-d" {
-			result = append(result, "-d")
-			i++
-			if i < len(args) {
-				result = append(result, "<delim>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<delim>")
 			continue
 		}
 
@@ -51,12 +46,7 @@ func handleCut(subcommand string, tokens []string) []string {
 
 		// -b, -c, -f with separate argument
 		if rangeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<range>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<range>")
 			continue
 		}
 

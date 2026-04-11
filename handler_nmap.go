@@ -56,6 +56,15 @@ func handleNmap(subcommand string, tokens []string) []string {
 		"-S": true, "--exclude": true,
 	}
 
+	categories := []flagCategory{
+		{portFlags, "<ports>"},
+		{pathFlags, "<path>"},
+		{scriptFlags, "<script>"},
+		{numericFlags, "N"},
+		{valFlags, "<val>"},
+		{hostFlags, "<host>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -68,63 +77,8 @@ func handleNmap(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if portFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<ports>")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if scriptFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<script>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
-			continue
-		}
-
-		if hostFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<host>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

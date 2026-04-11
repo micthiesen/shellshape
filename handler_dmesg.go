@@ -42,6 +42,15 @@ func handleDmesg(subcommand string, tokens []string) []string {
 		"--time-format": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{levelFlags, "<level>"},
+		{facilityFlags, "<facility>"},
+		{sizeFlags, "N"},
+		{timeFlags, "<time>"},
+		{fmtFlags, "<fmt>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -53,87 +62,8 @@ func handleDmesg(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if levelFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<level>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if facilityFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<facility>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if sizeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
-			continue
-		}
-
-		if timeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<time>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if fmtFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<fmt>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

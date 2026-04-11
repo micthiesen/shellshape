@@ -84,6 +84,15 @@ func handleWget(subcommand string, tokens []string) []string {
 		"--input-metalink": true, "--metalink-index": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+		{headerFlags, "<header>"},
+		{dataFlags, "<data>"},
+		{strFlags, "<str>"},
+		{valFlags, "<val>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -95,63 +104,8 @@ func handleWget(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if headerFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<header>")
-				i++
-			}
-			continue
-		}
-
-		if dataFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<data>")
-				i++
-			}
-			continue
-		}
-
-		if strFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<str>")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

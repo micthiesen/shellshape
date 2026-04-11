@@ -1,9 +1,6 @@
 package shellshape
 
-import (
-	"regexp"
-	"strings"
-)
+import "regexp"
 
 func init() {
 	Register("git", handleGit, HandlerOptions{HasSubcommands: true})
@@ -90,6 +87,20 @@ func handleGit(subcommand string, tokens []string) []string {
 		return tok[len(tok)-1] == 'm'
 	}
 
+	categories := []flagCategory{
+		{msgFlags, "<str>"},
+		{valFlags, "<val>"},
+		{numericFlags, "N"},
+		{pathFlags, "<path>"},
+	}
+	fusedCategories := []flagCategory{
+		{eqValFlags, "<val>"},
+		{valFlags, "<val>"},
+		{msgFlags, "<val>"},
+		{pathFlags, "<val>"},
+		{numericFlags, "<val>"},
+	}
+
 	var result []string
 	configKeysSeen := 0
 	i := 0
@@ -109,87 +120,22 @@ func handleGit(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if msgFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<str>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
 		// Fused message flags like -am
 		if isFusedMsgFlag(tok) {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<str>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<str>")
 			continue
 		}
 
 		// Handle --flag=value forms for known flags.
-		// Use classifyToken for consistent treatment with the generic path.
-		if strings.HasPrefix(tok, "--") && strings.Contains(tok, "=") {
-			eqIdx := strings.Index(tok, "=")
-			flagName := tok[:eqIdx]
-			if eqValFlags[flagName] || valFlags[flagName] || msgFlags[flagName] || pathFlags[flagName] || numericFlags[flagName] {
-				result = append(result, flagName+"=<val>")
-				i++
-				continue
-			}
+		if norm, ok := consumeFusedFlag(tok, fusedCategories); ok {
+			result = append(result, norm)
+			i++
+			continue
 		}
 
 		if isFlagToken(tok) {

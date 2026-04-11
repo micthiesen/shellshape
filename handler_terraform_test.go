@@ -50,7 +50,7 @@ func TestTerraform(t *testing.T) {
 		{"plan out", "terraform plan -out plan.out", "terraform plan -out <path>"},
 
 		// Path flags (=value syntax)
-		{"var-file with equals", "terraform plan -var-file=prod.tfvars", "terraform plan -var-file=<val>"},
+		{"var-file with equals", "terraform plan -var-file=prod.tfvars", "terraform plan -var-file=<path>"},
 
 		// Numeric flags
 		{"apply parallelism", "terraform apply -parallelism 10", "terraform apply -parallelism N"},

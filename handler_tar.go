@@ -47,6 +47,14 @@ func handleTar(subcommand string, tokens []string) []string {
 		"--gid": true, "--uid": true,
 	}
 
+	categories := []flagCategory{
+		{archiveFlags, "<archive>"},
+		{pathFlags, "<path>"},
+		{patternFlags, "<pattern>"},
+		{numericFlags, "N"},
+		{valFlags, "<val>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -78,65 +86,8 @@ func handleTar(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if archiveFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<archive>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if patternFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<pattern>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

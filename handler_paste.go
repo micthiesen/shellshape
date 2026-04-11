@@ -29,12 +29,7 @@ func handlePaste(subcommand string, tokens []string) []string {
 
 		// -d with separate argument
 		if tok == "-d" || tok == "--delimiters" {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<delim>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<delim>")
 			continue
 		}
 

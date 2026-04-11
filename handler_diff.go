@@ -41,6 +41,13 @@ func handleDiff(subcommand string, tokens []string) []string {
 		"-A": true, "--algorithm": true,
 	}
 
+	categories := []flagCategory{
+		{numericFlags, "N"},
+		{patternFlags, "<pattern>"},
+		{stringFlags, "<str>"},
+		{fileFlags, "<path>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -53,43 +60,8 @@ func handleDiff(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if patternFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<pattern>")
-				i++
-			}
-			continue
-		}
-
-		if stringFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<str>")
-				i++
-			}
-			continue
-		}
-
-		if fileFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

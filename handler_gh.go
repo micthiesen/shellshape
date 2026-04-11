@@ -65,6 +65,12 @@ func handleGh(subcommand string, tokens []string) []string {
 		"api": true, "status": true, "completion": true,
 	}
 
+	categories := []flagCategory{
+		{strFlags, "<str>"},
+		{valFlags, "<val>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 	subcommandTaken := noSecondSubcmd[subcommand]
 
@@ -78,33 +84,8 @@ func handleGh(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if strFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<str>")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

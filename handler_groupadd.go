@@ -34,6 +34,13 @@ func handleGroupadd(subcommand string, tokens []string) []string {
 		"-n": true, "--new-name": true,
 	}
 
+	categories := []flagCategory{
+		{gidFlags, "N"},
+		{pathFlags, "<path>"},
+		{strFlags, "<str>"},
+		{groupFlags, "<group>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -45,59 +52,8 @@ func handleGroupadd(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if gidFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if strFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<str>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if groupFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<group>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

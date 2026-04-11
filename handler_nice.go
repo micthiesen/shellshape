@@ -34,12 +34,7 @@ func handleNice(subcommand string, tokens []string) []string {
 
 		// -n flag: consumes the next token as niceness value
 		if tok == "-n" || tok == "--adjustment" {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 

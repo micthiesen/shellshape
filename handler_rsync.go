@@ -31,6 +31,12 @@ func handleRsync(subcommand string, tokens []string) []string {
 		"-T": true, "--temp-dir": true,
 	}
 
+	categories := []flagCategory{
+		{rshFlags, "<rsh>"},
+		{filterFlags, "<filter>"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -42,33 +48,8 @@ func handleRsync(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if rshFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<rsh>")
-				i++
-			}
-			continue
-		}
-
-		if filterFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<filter>")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

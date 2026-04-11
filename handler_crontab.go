@@ -26,12 +26,7 @@ func handleCrontab(subcommand string, tokens []string) []string {
 		}
 
 		if userFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<user>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<user>")
 			continue
 		}
 

@@ -29,6 +29,12 @@ func handleLsblk(subcommand string, tokens []string) []string {
 		"-w": true, "--width": true,
 	}
 
+	categories := []flagCategory{
+		{columnListFlags, "<columns>"},
+		{sortFlags, "<column>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -40,13 +46,8 @@ func handleLsblk(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if columnListFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<columns>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
@@ -60,26 +61,6 @@ func handleLsblk(subcommand string, tokens []string) []string {
 				} else {
 					result = append(result, "N")
 				}
-				i++
-			}
-			continue
-		}
-
-		if sortFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<column>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
 				i++
 			}
 			continue

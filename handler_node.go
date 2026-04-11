@@ -82,35 +82,20 @@ func handleNode(subcommand string, tokens []string) []string {
 
 		// Code flags: -e/-c consume the next token as <code>.
 		if codeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<code>")
-				scriptSeen = true
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<code>")
+			scriptSeen = true
 			continue
 		}
 
 		// Path-consuming flags.
 		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 
 		// Value-consuming flags.
 		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

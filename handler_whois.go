@@ -39,32 +39,17 @@ func handleWhois(subcommand string, tokens []string) []string {
 		}
 
 		if !pastDashes && hostFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<host>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<host>")
 			continue
 		}
 
 		if !pastDashes && numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		if !pastDashes && valueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

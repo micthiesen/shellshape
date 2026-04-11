@@ -75,6 +75,11 @@ func handleDocker(subcommand string, tokens []string) []string {
 		"-w": true, "--workdir": true,
 	}
 
+	categories := []flagCategory{
+		{valFlags, "<val>"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -86,31 +91,8 @@ func handleDocker(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

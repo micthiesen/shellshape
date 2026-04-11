@@ -36,12 +36,7 @@ func handleTac(subcommand string, tokens []string) []string {
 		}
 
 		if separatorFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<sep>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<sep>")
 			continue
 		}
 

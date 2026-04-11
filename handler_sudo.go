@@ -1,7 +1,5 @@
 package shellshape
 
-import "strings"
-
 func init() {
 	Register("sudo", handleSudo)
 }
@@ -30,6 +28,12 @@ func handleSudo(subcommand string, tokens []string) []string {
 		"-C": true, "--close-from": true,
 	}
 
+	categories := []flagCategory{
+		{valFlags, "<val>"},
+		{strFlags, "<str>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 	parsingFlags := true
 
@@ -45,57 +49,16 @@ func handleSudo(subcommand string, tokens []string) []string {
 		}
 
 		if parsingFlags {
-			if valFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					if isSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<val>")
-					}
-					i++
-				}
-				continue
-			}
-
-			if strFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					if isSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<str>")
-					}
-					i++
-				}
-				continue
-			}
-
-			if numericFlags[tok] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					if isSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "N")
-					}
-					i++
-				}
+			if placeholder, ok := matchFlagCategory(tok, categories); ok {
+				result, i = consumeFlagArg(tok, args, i, result, placeholder)
 				continue
 			}
 
 			// Long flags with = (e.g. --user=www)
-			if strings.HasPrefix(tok, "--") && strings.Contains(tok, "=") {
-				eqIdx := strings.Index(tok, "=")
-				flagName := tok[:eqIdx]
-				if valFlags[flagName] || strFlags[flagName] || numericFlags[flagName] {
-					result = append(result, flagName+"=<val>")
-					i++
-					continue
-				}
+			if norm, ok := consumeFusedFlag(tok, categories); ok {
+				result = append(result, norm)
+				i++
+				continue
 			}
 
 			if isFlagToken(tok) {

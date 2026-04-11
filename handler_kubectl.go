@@ -97,6 +97,12 @@ func handleKubectl(subcommand string, tokens []string) []string {
 		"--help":       true,
 	}
 
+	categories := []flagCategory{
+		{selectorFlags, "<selector>"},
+		{valFlags, "<val>"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	resourceTypeAssigned := nameFirstSubcmds[subcommand] // skip resource type for name-first subcommands
 	doubleDash := false
@@ -141,58 +147,14 @@ func handleKubectl(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, args[i])
-				}
+				result = append(result, args[i])
 				i++
 			}
 			continue
 		}
 
-		// Selector flags: collapse value to <selector>.
-		if selectorFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<selector>")
-				}
-				i++
-			}
-			continue
-		}
-
-		// Value flags: collapse value to <val>.
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-			continue
-		}
-
-		// Path flags: collapse value to <path>.
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

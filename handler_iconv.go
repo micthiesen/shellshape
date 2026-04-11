@@ -32,22 +32,12 @@ func handleIconv(subcommand string, tokens []string) []string {
 		}
 
 		if encodingFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<encoding>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<encoding>")
 			continue
 		}
 
 		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 

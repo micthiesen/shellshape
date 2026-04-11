@@ -60,47 +60,6 @@ var goBuildNumFlags = map[string]bool{
 	"-p": true,
 }
 
-func consumeFlagArg(tok string, args []string, i int, result []string, placeholder string) ([]string, int) {
-	result = append(result, tok)
-	i++
-	if i < len(args) {
-		if isSubshellToken(args[i]) {
-			result = append(result, args[i])
-		} else {
-			result = append(result, placeholder)
-		}
-		i++
-	}
-	return result, i
-}
-
-// handleFusedFlag handles flags like -count=1, -timeout=5m where the value
-// is joined with = sign. Returns the normalized token and true if it was a
-// fused flag, or empty string and false otherwise.
-func handleGoFusedFlag(tok string, numFlags, durationFlags, patternFlags, pathFlags, valFlags map[string]bool) (string, bool) {
-	eqIdx := strings.IndexByte(tok, '=')
-	if eqIdx < 0 {
-		return "", false
-	}
-	key := tok[:eqIdx]
-	if numFlags != nil && numFlags[key] {
-		return key + "=N", true
-	}
-	if durationFlags != nil && durationFlags[key] {
-		return key + "=<duration>", true
-	}
-	if patternFlags != nil && patternFlags[key] {
-		return key + "=<pattern>", true
-	}
-	if pathFlags != nil && pathFlags[key] {
-		return key + "=<path>", true
-	}
-	if valFlags != nil && valFlags[key] {
-		return key + "=<val>", true
-	}
-	return "", false
-}
-
 func handleGoTest(tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
@@ -145,6 +104,15 @@ func handleGoTest(tokens []string) []string {
 		allValFlags[k] = true
 	}
 
+	categories := []flagCategory{
+		{patternFlags, "<pattern>"},
+		{numFlags, "N"},
+		{goBuildNumFlags, "N"},
+		{durationFlags, "<duration>"},
+		{pathFlags, "<path>"},
+		{allValFlags, "<val>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -158,13 +126,8 @@ func handleGoTest(tokens []string) []string {
 
 		// Fused =value flags
 		if strings.Contains(tok, "=") && isFlagToken(tok) {
-			if norm, ok := handleGoFusedFlag(tok, numFlags, durationFlags, patternFlags, pathFlags, allValFlags); ok {
+			if norm, ok := consumeFusedFlag(tok, categories); ok {
 				result = append(result, norm)
-				i++
-				continue
-			}
-			if goBuildNumFlags[tok[:strings.IndexByte(tok, '=')]] {
-				result = append(result, tok[:strings.IndexByte(tok, '=')]+"=N")
 				i++
 				continue
 			}
@@ -174,24 +137,8 @@ func handleGoTest(tokens []string) []string {
 			continue
 		}
 
-		if patternFlags[tok] {
-			result, i = consumeFlagArg(tok, args, i, result, "<pattern>")
-			continue
-		}
-		if numFlags[tok] || goBuildNumFlags[tok] {
-			result, i = consumeFlagArg(tok, args, i, result, "N")
-			continue
-		}
-		if durationFlags[tok] {
-			result, i = consumeFlagArg(tok, args, i, result, "<duration>")
-			continue
-		}
-		if pathFlags[tok] {
-			result, i = consumeFlagArg(tok, args, i, result, "<path>")
-			continue
-		}
-		if allValFlags[tok] {
-			result, i = consumeFlagArg(tok, args, i, result, "<val>")
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

@@ -55,27 +55,13 @@ func handleTsx(subcommand string, tokens []string) []string {
 
 		// Flags that consume a path
 		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 
 		// Flags that consume a module specifier
 		if moduleFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<module>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<module>")
 			continue
 		}
 

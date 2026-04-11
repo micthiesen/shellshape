@@ -37,30 +37,12 @@ func handleHtop(subcommand string, tokens []string) []string {
 		}
 
 		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		if placeholder, ok := valueFlags[tok]; ok {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

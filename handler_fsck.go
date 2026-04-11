@@ -24,12 +24,7 @@ func handleFsck(subcommand string, tokens []string) []string {
 
 		// -t/--type consumes the next token as a filesystem type.
 		if tok == "-t" || tok == "--type" {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<type>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<type>")
 			continue
 		}
 

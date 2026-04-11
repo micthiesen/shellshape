@@ -75,6 +75,12 @@ func handleIptables(subcommand string, tokens []string) []string {
 		"--log-prefix": true,
 	}
 
+	categories := []flagCategory{
+		{addrFlags, "<addr>"},
+		{valFlags, "<val>"},
+		{strFlags, "<str>"},
+	}
+
 	// Track whether we just saw -D or -I (next positional number = rule number).
 	expectRuleNum := false
 
@@ -109,58 +115,15 @@ func handleIptables(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, args[i]) // keep verbatim
-				}
+				result = append(result, args[i])
 				i++
 			}
 			expectRuleNum = false
 			continue
 		}
 
-		if addrFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<addr>")
-				}
-				i++
-			}
-			expectRuleNum = false
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-			expectRuleNum = false
-			continue
-		}
-
-		if strFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<str>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			expectRuleNum = false
 			continue
 		}

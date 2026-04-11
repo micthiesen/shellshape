@@ -69,6 +69,12 @@ func handleSystemctl(subcommand string, tokens []string) []string {
 		"--show-transaction": true,
 	}
 
+	categories := []flagCategory{
+		{valFlags, "<val>"},
+		{numericFlags, "N"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	i := 0
 
@@ -78,27 +84,15 @@ func handleSystemctl(subcommand string, tokens []string) []string {
 	if isFlagToken(subcommand) {
 		// The flag token itself was already appended by the normalizer.
 		// If it takes a value, the value is the first token in args.
-		if valFlags[subcommand] && i < len(args) && !isFlagToken(args[i]) {
-			if isSubshellToken(args[i]) {
-				result = append(result, args[i])
-			} else {
-				result = append(result, "<val>")
+		if placeholder, ok := matchFlagCategory(subcommand, categories); ok {
+			if i < len(args) && !isFlagToken(args[i]) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, placeholder)
+				}
+				i++
 			}
-			i++
-		} else if numericFlags[subcommand] && i < len(args) && !isFlagToken(args[i]) {
-			if isSubshellToken(args[i]) {
-				result = append(result, args[i])
-			} else {
-				result = append(result, "N")
-			}
-			i++
-		} else if pathFlags[subcommand] && i < len(args) && !isFlagToken(args[i]) {
-			if isSubshellToken(args[i]) {
-				result = append(result, args[i])
-			} else {
-				result = append(result, "<path>")
-			}
-			i++
 		} else if verbatimValueFlags[subcommand] && i < len(args) && !isFlagToken(args[i]) {
 			result = append(result, args[i])
 			i++
@@ -127,59 +121,19 @@ func handleSystemctl(subcommand string, tokens []string) []string {
 			continue
 		}
 
+		// Verbatim value flags: keep flag and value as-is.
 		if verbatimValueFlags[tok] {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, args[i])
-				}
+				result = append(result, args[i])
 				i++
 			}
 			continue
 		}
 
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

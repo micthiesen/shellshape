@@ -38,6 +38,15 @@ func handleMount(subcommand string, tokens []string) []string {
 		"-T": true, "--fstab": true,
 	}
 
+	categories := []flagCategory{
+		{typeFlags, "<type>"},
+		{optsFlags, "<opts>"},
+		{labelFlags, "<label>"},
+		{uuidFlags, "<uuid>"},
+		{namespaceFlags, "N"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -49,63 +58,8 @@ func handleMount(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if typeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<type>")
-				i++
-			}
-			continue
-		}
-
-		if optsFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<opts>")
-				i++
-			}
-			continue
-		}
-
-		if labelFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<label>")
-				i++
-			}
-			continue
-		}
-
-		if uuidFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<uuid>")
-				i++
-			}
-			continue
-		}
-
-		if namespaceFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

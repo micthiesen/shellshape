@@ -30,6 +30,13 @@ func handleSsh(subcommand string, tokens []string) []string {
 		"-w": true, "-W": true, "-D": true, "-L": true, "-R": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{portFlags, "N"},
+		{hostFlags, "<jump-host>"},
+		{strFlags, "<str>"},
+	}
+
 	var result []string
 	hostAssigned := false
 
@@ -46,26 +53,6 @@ func handleSsh(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if portFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
 		// Once host is assigned, everything remaining is the remote command.
 		if hostAssigned {
 			result = append(result, "<cmd>")
@@ -73,23 +60,8 @@ func handleSsh(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if hostFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<jump-host>")
-				i++
-			}
-			continue
-		}
-
-		if strFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<str>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

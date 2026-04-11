@@ -43,22 +43,12 @@ func handleTsc(subcommand string, tokens []string) []string {
 		}
 
 		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 
 		if valueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

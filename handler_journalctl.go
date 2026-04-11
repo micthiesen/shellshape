@@ -70,6 +70,12 @@ func handleJournalctl(subcommand string, tokens []string) []string {
 		"-b": true, "--boot": true,
 	}
 
+	categories := []flagCategory{
+		{grepFlags, "<pattern>"},
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -81,45 +87,8 @@ func handleJournalctl(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if grepFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<pattern>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

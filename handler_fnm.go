@@ -51,6 +51,11 @@ func handleFnm(subcommand string, tokens []string) []string {
 		"--shell": true,
 	}
 
+	categories := []flagCategory{
+		{valFlags, "<val>"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	positionalCount := 0
 
@@ -65,31 +70,8 @@ func handleFnm(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
@@ -105,16 +87,7 @@ func handleFnm(subcommand string, tokens []string) []string {
 
 		// For exec subcommand, --using consumes a version.
 		if tok == "--using" && subcommand == "exec" {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<version>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<version>")
 			continue
 		}
 

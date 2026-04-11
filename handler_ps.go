@@ -43,16 +43,7 @@ func handlePs(subcommand string, tokens []string) []string {
 		if strings.HasPrefix(tok, "-") && len(tok) >= 2 && tok[1] != '-' {
 			lastChar := tok[len(tok)-1]
 			if placeholder, ok := consumingFlags[lastChar]; ok {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					if isSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, placeholder)
-					}
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, placeholder)
 				continue
 			}
 		}

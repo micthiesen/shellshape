@@ -64,6 +64,12 @@ func handleOpenssl(subcommand string, tokens []string) []string {
 		"-multi": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{valueFlags, "<val>"},
+		{numericFlags, "N"},
+	}
+
 	var result []string
 
 	i := 0
@@ -76,33 +82,8 @@ func handleOpenssl(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if valueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

@@ -86,6 +86,11 @@ func handleIP(subcommand string, tokens []string) []string {
 		"remote":  true,
 	}
 
+	categories := []flagCategory{
+		{numKeywords, "N"},
+		{addrKeywords, "<addr>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -104,16 +109,7 @@ func handleIP(subcommand string, tokens []string) []string {
 		}
 
 		if globalValFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 
@@ -123,7 +119,7 @@ func handleIP(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		// Keyword-value pairs
+		// Keyword-value pairs: valKeywords get special addr detection
 		if valKeywords[tok] {
 			result = append(result, tok)
 			i++
@@ -140,31 +136,8 @@ func handleIP(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if numKeywords[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
-			continue
-		}
-
-		if addrKeywords[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<addr>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

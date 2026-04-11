@@ -42,44 +42,17 @@ func handleSu(subcommand string, tokens []string) []string {
 		}
 
 		if codeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<code>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<code>")
 			continue
 		}
 
 		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 
 		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<val>")
 			continue
 		}
 

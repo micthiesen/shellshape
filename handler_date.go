@@ -72,23 +72,13 @@ func handleDate(subcommand string, tokens []string) []string {
 
 		// Short/long flags that consume next token as date string
 		if dateStrFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<date-str>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<date-str>")
 			continue
 		}
 
 		// Flags that consume next token as path
 		if fileFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<path>")
 			continue
 		}
 

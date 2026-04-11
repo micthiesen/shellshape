@@ -59,23 +59,13 @@ func handleLsof(_ string, tokens []string) []string {
 
 		// Flags that consume a value.
 		if ph, ok := valueFlags[tok]; ok {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, ph)
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, ph)
 			continue
 		}
 
 		// Numeric value flags.
 		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 

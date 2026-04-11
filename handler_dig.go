@@ -31,6 +31,14 @@ func handleDig(subcommand string, tokens []string) []string {
 		"IN": true, "CH": true, "HS": true,
 	}
 
+	categories := []flagCategory{
+		{addrFlags, "<addr>"},
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+		{nameFlags, "<name>"},
+		{keyFlags, "<key>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -58,53 +66,8 @@ func handleDig(subcommand string, tokens []string) []string {
 		}
 
 		// Flags that consume the next token.
-		if addrFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<addr>")
-				i++
-			}
-			continue
-		}
-
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if nameFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<name>")
-				i++
-			}
-			continue
-		}
-
-		if keyFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<key>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

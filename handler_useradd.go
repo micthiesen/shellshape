@@ -48,6 +48,15 @@ func handleUseradd(subcommand string, tokens []string) []string {
 		"-Z": true, "--selinux-user": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{groupFlag, "<group>"},
+		{groupsFlag, "<groups>"},
+		{numericFlags, "N"},
+		{commentFlags, "<comment>"},
+		{valueFlags, "<value>"},
+	}
+
 	var result []string
 
 	i := 0
@@ -60,63 +69,8 @@ func handleUseradd(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if groupFlag[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<group>")
-				i++
-			}
-			continue
-		}
-
-		if groupsFlag[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<groups>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if commentFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<comment>")
-				i++
-			}
-			continue
-		}
-
-		if valueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<value>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
@@ -127,21 +81,11 @@ func handleUseradd(subcommand string, tokens []string) []string {
 		if isFlagToken(tok) && !strings.HasPrefix(tok, "--") && len(tok) > 2 {
 			lastChar := tok[len(tok)-1:]
 			if groupsFlag["-"+lastChar] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "<groups>")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "<groups>")
 				continue
 			}
 			if groupFlag["-"+lastChar] {
-				result = append(result, tok)
-				i++
-				if i < len(args) {
-					result = append(result, "<group>")
-					i++
-				}
+				result, i = consumeFlagArg(tok, args, i, result, "<group>")
 				continue
 			}
 		}

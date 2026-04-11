@@ -30,32 +30,14 @@ func handleFree(subcommand string, tokens []string) []string {
 		}
 
 		if consumingFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		// Combined short flags like -hs: if last char is a consuming letter,
 		// the next token is the value.
 		if len(tok) > 2 && tok[0] == '-' && tok[1] != '-' && consumingLetters[tok[len(tok)-1]] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 

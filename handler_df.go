@@ -33,24 +33,14 @@ func handleDf(subcommand string, tokens []string) []string {
 		}
 
 		if typeFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<type>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<type>")
 			continue
 		}
 
 		// Combined short flags like -lT: if last char is a type-consuming letter,
 		// the next token is the type value.
 		if len(tok) > 2 && tok[0] == '-' && tok[1] != '-' && typeLetters[tok[len(tok)-1]] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<type>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<type>")
 			continue
 		}
 

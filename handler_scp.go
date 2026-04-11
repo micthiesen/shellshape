@@ -44,6 +44,13 @@ func handleScp(subcommand string, tokens []string) []string {
 		"-J": true,
 	}
 
+	categories := []flagCategory{
+		{pathFlags, "<path>"},
+		{numericFlags, "N"},
+		{valFlags, "<val>"},
+		{hostFlags, "<host>"},
+	}
+
 	var result []string
 	i := 0
 	for i < len(args) {
@@ -55,43 +62,8 @@ func handleScp(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
-			continue
-		}
-
-		if valFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<val>")
-				i++
-			}
-			continue
-		}
-
-		if hostFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<host>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

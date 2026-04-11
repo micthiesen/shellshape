@@ -20,6 +20,13 @@ func handleAt(subcommand string, tokens []string) []string {
 	timeArgFlags := map[string]bool{"-t": true}
 	jobFlags := map[string]bool{"-c": true}
 
+	categories := []flagCategory{
+		{fileFlags, "<path>"},
+		{queueFlags, "<queue>"},
+		{timeArgFlags, "<time>"},
+		{jobFlags, "<job-id>"},
+	}
+
 	deleteMode := false
 
 	var result []string
@@ -36,43 +43,8 @@ func handleAt(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		if fileFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<path>")
-				i++
-			}
-			continue
-		}
-
-		if queueFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<queue>")
-				i++
-			}
-			continue
-		}
-
-		if timeArgFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<time>")
-				i++
-			}
-			continue
-		}
-
-		if jobFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<job-id>")
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 
@@ -119,12 +91,7 @@ func handleAtq(subcommand string, tokens []string) []string {
 		tok := args[i]
 
 		if tok == "-q" {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<queue>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<queue>")
 			continue
 		}
 

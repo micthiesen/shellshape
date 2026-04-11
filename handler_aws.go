@@ -57,6 +57,12 @@ func handleAws(subcommand string, tokens []string) []string {
 		"--ca-bundle": true,
 	}
 
+	categories := []flagCategory{
+		{queryFlags, "<query>"},
+		{numericFlags, "N"},
+		{pathFlags, "<path>"},
+	}
+
 	var result []string
 	subcmdAssigned := false
 
@@ -85,58 +91,14 @@ func handleAws(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, args[i])
-				}
+				result = append(result, args[i])
 				i++
 			}
 			continue
 		}
 
-		// Query flags: collapse value to <query>.
-		if queryFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<query>")
-				}
-				i++
-			}
-			continue
-		}
-
-		// Numeric flags: collapse value to N.
-		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "N")
-				}
-				i++
-			}
-			continue
-		}
-
-		// Path flags: collapse value to <path>.
-		if pathFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				if isSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<path>")
-				}
-				i++
-			}
+		if placeholder, ok := matchFlagCategory(tok, categories); ok {
+			result, i = consumeFlagArg(tok, args, i, result, placeholder)
 			continue
 		}
 

@@ -46,22 +46,12 @@ func handleCal(subcommand string, tokens []string) []string {
 		}
 
 		if numericFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "N")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "N")
 			continue
 		}
 
 		if dateFlags[tok] {
-			result = append(result, tok)
-			i++
-			if i < len(args) {
-				result = append(result, "<date>")
-				i++
-			}
+			result, i = consumeFlagArg(tok, args, i, result, "<date>")
 			continue
 		}
 
