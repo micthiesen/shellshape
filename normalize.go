@@ -71,7 +71,7 @@ func ExecutableOf(shape string) string {
 	}
 	tokens := strings.Fields(shape)
 	i := 0
-	for i < len(tokens) && isEnvAssignment(tokens[i]) {
+	for i < len(tokens) && IsEnvAssignment(tokens[i]) {
 		i++
 	}
 	if i < len(tokens) {
@@ -112,7 +112,7 @@ func normalizeSingleCommand(seg string) string {
 	// Strip leading env var assignments.
 	var envParts []string
 	i := 0
-	for i < len(tokens) && isEnvAssignment(tokens[i]) {
+	for i < len(tokens) && IsEnvAssignment(tokens[i]) {
 		name := tokens[i][:strings.Index(tokens[i], "=")+1]
 		envParts = append(envParts, name+"<val>")
 		i++
@@ -165,7 +165,7 @@ func normalizeSingleCommand(seg string) string {
 	interpWithCode := interpretersWithCodeFlag[exe]
 	for i < len(tokens) {
 		tok := tokens[i]
-		if redirectConsumeNext[tok] && i+1 < len(tokens) {
+		if RedirectConsumeNext[tok] && i+1 < len(tokens) {
 			placeholder := "<path>"
 			if tok == "<<<" {
 				placeholder = "<str>"
@@ -174,7 +174,7 @@ func normalizeSingleCommand(seg string) string {
 			i += 2
 			continue
 		}
-		if redirectStandalone[tok] {
+		if RedirectStandalone[tok] {
 			result = append(result, tok)
 			i++
 			continue
@@ -184,7 +184,7 @@ func normalizeSingleCommand(seg string) string {
 			i += 2
 			continue
 		}
-		result = append(result, classifyToken(tok))
+		result = append(result, ClassifyToken(tok))
 		i++
 	}
 
@@ -294,7 +294,7 @@ func fallbackNormalize(seg string) string {
 	}
 	result := []string{words[0]}
 	for _, w := range words[1:] {
-		result = append(result, classifyToken(w))
+		result = append(result, ClassifyToken(w))
 	}
 	return strings.Join(result, " ")
 }

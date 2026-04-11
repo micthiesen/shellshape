@@ -8,13 +8,13 @@ type HandlerOptions struct {
 	HasSubcommands bool
 }
 
-var handlers = map[string]handlerFunc{}
+var handlers = map[string]HandlerFunc{}
 var handlerOptions = map[string]HandlerOptions{}
 
 // Register adds a command handler to the registry.
 // If fn is nil the command is registered for its options only (e.g. subcommand
 // detection) without a per-command handler.
-func Register(name string, fn handlerFunc, opts ...HandlerOptions) {
+func Register(name string, fn HandlerFunc, opts ...HandlerOptions) {
 	if fn != nil {
 		handlers[name] = fn
 	}

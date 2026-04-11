@@ -58,9 +58,9 @@ func TestClassifyToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := classifyToken(tt.input)
+			got := ClassifyToken(tt.input)
 			if got != tt.want {
-				t.Errorf("classifyToken(%q) = %q, want %q", tt.input, got, tt.want)
+				t.Errorf("ClassifyToken(%q) = %q, want %q", tt.input, got, tt.want)
 			}
 		})
 	}
@@ -79,8 +79,8 @@ func TestIsSubshellToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			if got := isSubshellToken(tt.input); got != tt.want {
-				t.Errorf("isSubshellToken(%q) = %v, want %v", tt.input, got, tt.want)
+			if got := IsSubshellToken(tt.input); got != tt.want {
+				t.Errorf("IsSubshellToken(%q) = %v, want %v", tt.input, got, tt.want)
 			}
 		})
 	}
@@ -101,8 +101,8 @@ func TestIsFlagToken(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			if got := isFlagToken(tt.input); got != tt.want {
-				t.Errorf("isFlagToken(%q) = %v, want %v", tt.input, got, tt.want)
+			if got := IsFlagToken(tt.input); got != tt.want {
+				t.Errorf("IsFlagToken(%q) = %v, want %v", tt.input, got, tt.want)
 			}
 		})
 	}
@@ -122,8 +122,8 @@ func TestIsEnvAssignment(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			if got := isEnvAssignment(tt.input); got != tt.want {
-				t.Errorf("isEnvAssignment(%q) = %v, want %v", tt.input, got, tt.want)
+			if got := IsEnvAssignment(tt.input); got != tt.want {
+				t.Errorf("IsEnvAssignment(%q) = %v, want %v", tt.input, got, tt.want)
 			}
 		})
 	}

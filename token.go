@@ -15,7 +15,7 @@ var (
 
 	hexRE = regexp.MustCompile(`^[0-9a-fA-F]+$`)
 
-	numberRE = regexp.MustCompile(`^-?\d+(\.\d+)?$`)
+	NumberRE = regexp.MustCompile(`^-?\d+(\.\d+)?$`)
 
 	schemeRE = regexp.MustCompile(`^([a-zA-Z][a-zA-Z0-9+.-]*)://`)
 
@@ -28,7 +28,7 @@ var (
 	envAssignRE = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*=`)
 )
 
-func classifyToken(tok string) string {
+func ClassifyToken(tok string) string {
 	// 1. Long flag
 	if strings.HasPrefix(tok, "--") && len(tok) > 2 {
 		if idx := strings.Index(tok, "="); idx >= 0 {
@@ -47,7 +47,7 @@ func classifyToken(tok string) string {
 	}
 
 	// 3. Signed number
-	if numberRE.MatchString(tok) {
+	if NumberRE.MatchString(tok) {
 		return "N"
 	}
 
@@ -140,11 +140,11 @@ func looksLikeRev(s string) bool {
 	return false
 }
 
-func isSubshellToken(tok string) bool {
+func IsSubshellToken(tok string) bool {
 	return strings.HasPrefix(tok, "$(") && strings.HasSuffix(tok, ")")
 }
 
-func isFlagToken(tok string) bool {
+func IsFlagToken(tok string) bool {
 	if !strings.HasPrefix(tok, "-") || len(tok) < 2 {
 		return false
 	}
@@ -152,6 +152,6 @@ func isFlagToken(tok string) bool {
 	return len(rest) > 0 && unicode.IsLetter(rune(rest[0]))
 }
 
-func isEnvAssignment(tok string) bool {
+func IsEnvAssignment(tok string) bool {
 	return envAssignRE.MatchString(tok)
 }

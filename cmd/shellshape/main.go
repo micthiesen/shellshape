@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	shellshape "github.com/micthiesen/shellshape"
+	_ "github.com/micthiesen/shellshape/handlers"
 )
 
 func main() {

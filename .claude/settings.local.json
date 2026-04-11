@@ -5,7 +5,8 @@
       "Read(//opt/homebrew/bin/**)",
       "mcp__fff__find_files",
       "mcp__fff__grep",
-      "mcp__fff__multi_grep"
+      "mcp__fff__multi_grep",
+      "Bash(bash:*)"
     ]
   }
 }
