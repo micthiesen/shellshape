@@ -16,6 +16,14 @@ func main() {
 		return
 	}
 
+	// If stdin is a terminal, print usage instead of hanging.
+	stat, _ := os.Stdin.Stat()
+	if stat.Mode()&os.ModeCharDevice != 0 {
+		fmt.Fprintln(os.Stderr, "Usage: shellshape <command>")
+		fmt.Fprintln(os.Stderr, "       echo <command> | shellshape")
+		os.Exit(1)
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
