@@ -126,6 +126,9 @@ Every handler must:
 2. Check `isSubshellToken(tok)` before collapsing any positional
 3. Have a subshell safety test
 
+PRs for new handlers are welcome. Handlers target the latest version of each
+command on Unix-like systems.
+
 ## Why
 
 - **Permission/policy systems**: write rules against shapes instead of
