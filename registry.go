@@ -30,7 +30,7 @@ func hasSubcommands(exe string) bool {
 func init() {
 	// Commands that need subcommand detection but have no per-command handler.
 	for _, name := range []string{
-		"git", "cargo", "go", "gcloud", "az",
+		"git", "cargo", "gcloud", "az",
 		"pip", "pip3", "uv", "poetry",
 		"snap",
 		"launchctl",
