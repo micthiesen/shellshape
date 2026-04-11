@@ -83,7 +83,8 @@ about specific commands where positional arguments have known semantics:
 
 ### Subshell safety
 
-Handlers preserve `$(...)` verbatim. `echo hello` and `echo $(rm -rf /)`
+Subshell expressions like `$(...)` are recursively normalized but never
+collapsed to a data placeholder. `echo hello` and `echo $(rm -rf /)`
 always produce different shapes. This is enforced by tests on every handler.
 
 ## Use as a library

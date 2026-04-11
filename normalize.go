@@ -166,7 +166,11 @@ func normalizeSingleCommand(seg string) string {
 	for i < len(tokens) {
 		tok := tokens[i]
 		if redirectConsumeNext[tok] && i+1 < len(tokens) {
-			result = append(result, tok, "<path>")
+			placeholder := "<path>"
+			if tok == "<<<" {
+				placeholder = "<str>"
+			}
+			result = append(result, tok, placeholder)
 			i += 2
 			continue
 		}

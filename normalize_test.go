@@ -454,13 +454,177 @@ func TestNormalizeHeredoc(t *testing.T) {
 }
 
 func TestNormalizeLineContinuation(t *testing.T) {
-	t.Run("simple continuation", func(t *testing.T) {
-		got := Normalize("echo \\\nhello")
-		want := "echo <str>"
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"simple continuation", "echo \\\nhello", "echo <str>"},
+		{"continuation with flags", "docker build \\\n  -t myapp \\\n  --no-cache \\\n  .", "docker build -t <val> --no-cache ."},
+		{"continuation mid flag", "curl \\\n  -X POST \\\n  -d '{\"a\":1}' \\\n  https://api.example.com", "curl -X <method> -d <data> <https-uri>"},
+		{"continuation preserves operators", "git add foo.ts && \\\ngit commit -m 'fix'", "git add <path> && git commit -m <str>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeSubshellComplex(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Recursive normalization of inner commands
+		{"subshell with path", "cat $(find ./src -name foo.py)", "cat $(find <path> -name <pattern>)"},
+		{"subshell inner normalized", "echo $(git rev-parse HEAD)", "echo $(git rev-parse HEAD)"},
+
+		// Operators inside subshells stay contained
+		{"subshell with pipe", "echo $(ls /tmp | head)", "echo $(ls <path> | head)"},
+		{"subshell with and", "echo $(cd /tmp && ls)", "echo $(cd <path> && ls)"},
+		{"subshell with semicolon", "echo $(echo hi; echo bye)", "echo $(echo <str> ; echo <str>)"},
+
+		// Nested subshells
+		{"nested subshell", "echo $(echo $(git status))", "echo $(echo $(git status))"},
+		{"nested subshell with path", "echo $(cat $(find . -name foo.go))", "echo $(cat $(find . -name <pattern>))"},
+
+		// Subshells with newlines inside
+		{"subshell with newlines", "echo $(echo foo\necho bar)", "echo $(echo <str> ; echo <str>)"},
+
+		// Multiple subshells in one command
+		{"two subshells", "echo $(whoami) $(pwd)", "echo $(whoami) $(pwd)"},
+		{"subshell and literal", "echo hello $(whoami)", "echo <str> $(whoami)"},
+
+		// Subshell in pipeline
+		{"subshell piped", "echo $(date) | cat", "echo $(date) | cat"},
+		{"subshell after pipe", "cat file.txt | grep $(echo pattern)", "cat <path> | grep $(echo <str>)"},
+
+		// Subshell in compound commands
+		{"subshell with and operator", "echo $(whoami) && echo done", "echo $(whoami) && echo <str>"},
+		{"subshell in second command", "cd /tmp && echo $(ls)", "cd <path> && echo $(ls)"},
+
+		// Subshell in env var assignment
+		{"subshell in env var", "A=$(date) cmd", "A=<val> cmd"},
+
+		// Backticks
+		{"backtick simple", "echo `date`", "echo $(<subshell>)"},
+		{"backtick in pipeline", "echo `whoami` | cat", "echo $(<subshell>) | cat"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeHerestring(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"simple herestring", "cat <<< hello", "cat <<< <str>"},
+		{"herestring quoted", `cat <<< "hello world"`, "cat <<< <str>"},
+		{"herestring with grep", `grep pattern <<< "some text"`, "grep <pattern> <<< <str>"},
+		{"herestring with jq", `jq '.name' <<< '{"name":"test"}'`, "jq <filter> <<< <str>"},
+		{"herestring with wc", `wc -w <<< "count these words"`, "wc -w <<< <str>"},
+		{"herestring with variable", "cat <<< $FOO", "cat <<< <str>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+	t.Run("different herestring values collide", func(t *testing.T) {
+		a := Normalize(`cat <<< "hello"`)
+		b := Normalize(`cat <<< "goodbye"`)
+		if a != b {
+			t.Errorf("expected %q == %q", a, b)
 		}
 	})
+	t.Run("herestring differs from heredoc", func(t *testing.T) {
+		a := Normalize("cat <<< hello")
+		b := Normalize("cat <<EOF\nhello\nEOF")
+		if a == b {
+			t.Error("herestring and heredoc should produce different shapes")
+		}
+	})
+}
+
+func TestNormalizeCompoundCommands(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Mixed operators
+		{"and then or", "pnpm build && pnpm test || echo failed", "pnpm build && pnpm test || echo <str>"},
+		{"pipe then and", "git log | head && echo done", "git log | head && echo <str>"},
+		{"semicolons and ands", "echo a; echo b && echo c", "echo <str> ; echo <str> && echo <str>"},
+
+		// Newlines as separators mixed with operators
+		{"newline then pipe", "git log\nls | head", "git log ; ls | head"},
+		{"operator then newline", "git status &&\ngit log", "git status && git log"},
+		{"newlines with all operators", "git add foo.ts\ngit commit -m 'fix' && git push\necho done", "git add <path> ; git commit -m <str> && git push ; echo <str>"},
+
+		// Parenthesized subshells (not $())
+		{"paren subshell", "(cd /tmp && ls)", "(cd <path> && ls)"},
+		{"paren subshell piped", "(cd /tmp && ls) | head", "(cd <path> && ls) | head"},
+
+		// Redirects with operators
+		{"redirect then pipe", "grep pattern file.txt 2>/dev/null | head", "grep <pattern> <path> 2>/dev/null | head"},
+		{"redirect then and", "make build 2>&1 && echo ok", "make build 2>&1 && echo <str>"},
+		{"redirect in second command", "echo start && ls /tmp > out.txt", "echo <str> && ls <path> > <path>"},
+
+		// Complex real-world patterns
+		{"conditional with redirect", "test -f config.yml && cat config.yml || echo 'missing' > /dev/stderr", "test -f <path> && cat <path> || echo <str> > <path>"},
+		{"pipeline with error handling", "curl -s https://api.example.com | jq '.data' || echo error", "curl -s <https-uri> | jq <filter> || echo <str>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeHeredocComplex(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Heredoc with operators before/after
+		{"heredoc after and", "git add . && git commit -F - <<'EOF'\nfix bug\nEOF", "git add . && git commit -F - <heredoc>"},
+		{"command after heredoc", "cat <<EOF\nhello\nEOF\necho done", "cat <heredoc> ; echo <str>"},
+
+		// Heredoc followed by another command
+		{"heredoc then command", "cat <<EOF\nhello world\nEOF\necho done", "cat <heredoc> ; echo <str>"},
+
+		// Multiple heredocs (rare but valid)
+		{"heredoc not confused with herestring", "cat <<EOF\ndata\nEOF", "cat <heredoc>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
 }
 
 func TestExecutableOf(t *testing.T) {

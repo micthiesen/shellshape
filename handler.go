@@ -8,6 +8,7 @@ var redirectConsumeNext = map[string]bool{
 	">": true, ">>": true, "<": true,
 	"&>": true, "&>>": true,
 	"2>": true, "2>>": true, "1>": true,
+	"<<<": true,
 }
 
 var redirectStandalone = map[string]bool{
@@ -29,7 +30,11 @@ func splitRedirects(tokens []string) (args, redirects []string) {
 
 		if redirectConsumeNext[tok] {
 			if i+1 < len(tokens) {
-				redirects = append(redirects, tok, "<path>")
+				placeholder := "<path>"
+				if tok == "<<<" {
+					placeholder = "<str>"
+				}
+				redirects = append(redirects, tok, placeholder)
 				i += 2
 			} else {
 				redirects = append(redirects, tok)

@@ -84,8 +84,10 @@ func collapseHeredocs(s string) string {
 			continue
 		}
 
-		// Check for heredoc opener
-		if ch == '<' && i+1 < len(s) && s[i+1] == '<' {
+		// Check for heredoc opener (but not herestring <<<)
+		if ch == '<' && i+1 < len(s) && s[i+1] == '<' &&
+			!(i+2 < len(s) && s[i+2] == '<') &&
+			!(i > 0 && s[i-1] == '<') {
 			loc := heredocOpenerRe.FindStringIndex(s[i:])
 			if loc != nil && loc[0] == 0 {
 				submatch := heredocOpenerRe.FindStringSubmatch(s[i:])
