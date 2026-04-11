@@ -1,20 +1,16 @@
 package shellshape
 
 func init() {
-	for _, name := range []string{"cat", "rev"} {
-		Register(name, handleCat)
-	}
+	Register("uname", handleUname)
 }
 
-// handleCat handles the cat command.
+// handleUname handles the uname command.
 // All flags are boolean (no flag consumes an argument).
-// All positionals are file paths, classified via classifyToken.
-// Subshells are preserved verbatim.
-func handleCat(subcommand string, tokens []string) []string {
+// Unexpected positionals are collapsed to <str>; subshells are preserved.
+func handleUname(subcommand string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	var result []string
-
 	for _, tok := range args {
 		if isSubshellToken(tok) {
 			result = append(result, tok)
@@ -24,7 +20,8 @@ func handleCat(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			continue
 		}
-		result = append(result, classifyToken(tok))
+		// Unexpected positional → collapse to <str>
+		result = append(result, "<str>")
 	}
 
 	result = append(result, redirects...)

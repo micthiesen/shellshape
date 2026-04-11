@@ -32,8 +32,8 @@ func init() {
 	for _, name := range []string{
 		"git", "cargo", "go", "gcloud", "az",
 		"pip", "pip3", "uv", "poetry",
-		"apt", "dnf", "pacman", "snap",
-		"systemctl", "launchctl",
+		"snap",
+		"launchctl",
 		"pulumi", "ollama", "lms",
 	} {
 		Register(name, nil, HandlerOptions{HasSubcommands: true})

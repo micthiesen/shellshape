@@ -1,0 +1,121 @@
+package shellshape
+
+import "strings"
+
+func init() {
+	Register("su", handleSu)
+}
+
+// handleSu handles the su command.
+// -c/--command takes a command string (<code>).
+// -s/--shell takes a shell path (<path>).
+// -g/--group and -G/--supp-group take a group name (<val>).
+// -w/--whitelist-environment takes an env var list (<val>).
+// Boolean flags (-, -l, --login, -m, -p, --preserve-environment, -f, --fast)
+// are preserved verbatim.
+// Positional arguments (username) collapse to <val>.
+func handleSu(subcommand string, tokens []string) []string {
+	args, redirects := splitRedirects(tokens)
+
+	codeFlags := map[string]bool{
+		"-c": true, "--command": true,
+	}
+	pathFlags := map[string]bool{
+		"-s": true, "--shell": true,
+	}
+	valFlags := map[string]bool{
+		"-g": true, "--group": true,
+		"-G": true, "--supp-group": true,
+		"-w": true, "--whitelist-environment": true,
+	}
+
+	var result []string
+
+	i := 0
+	for i < len(args) {
+		tok := args[i]
+
+		if isSubshellToken(tok) {
+			result = append(result, tok)
+			i++
+			continue
+		}
+
+		if codeFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, "<code>")
+				}
+				i++
+			}
+			continue
+		}
+
+		if pathFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, "<path>")
+				}
+				i++
+			}
+			continue
+		}
+
+		if valFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, "<val>")
+				}
+				i++
+			}
+			continue
+		}
+
+		// Long flags with = (e.g. --command='ls -la')
+		if strings.HasPrefix(tok, "--") && strings.Contains(tok, "=") {
+			eqIdx := strings.Index(tok, "=")
+			flagName := tok[:eqIdx]
+			if codeFlags[flagName] || pathFlags[flagName] || valFlags[flagName] {
+				result = append(result, flagName+"=<val>")
+				i++
+				continue
+			}
+		}
+
+		// Bare "-" is the login shorthand (equivalent to -l)
+		if tok == "-" {
+			result = append(result, "-")
+			i++
+			continue
+		}
+
+		if isFlagToken(tok) {
+			result = append(result, tok)
+			i++
+			continue
+		}
+
+		// Positional: username
+		if isSubshellToken(tok) {
+			result = append(result, tok)
+		} else {
+			result = append(result, "<val>")
+		}
+		i++
+	}
+
+	result = append(result, redirects...)
+	return result
+}

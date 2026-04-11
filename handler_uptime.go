@@ -1,20 +1,16 @@
 package shellshape
 
 func init() {
-	for _, name := range []string{"cat", "rev"} {
-		Register(name, handleCat)
-	}
+	Register("uptime", handleUptime)
 }
 
-// handleCat handles the cat command.
-// All flags are boolean (no flag consumes an argument).
-// All positionals are file paths, classified via classifyToken.
-// Subshells are preserved verbatim.
-func handleCat(subcommand string, tokens []string) []string {
+// handleUptime handles the uptime command.
+// All flags are boolean (-p, -s, -V, -h and long forms). Any unexpected
+// positional arguments are classified generically. Subshells are preserved.
+func handleUptime(subcommand string, tokens []string) []string {
 	args, redirects := splitRedirects(tokens)
 
 	var result []string
-
 	for _, tok := range args {
 		if isSubshellToken(tok) {
 			result = append(result, tok)

@@ -1,0 +1,102 @@
+package shellshape
+
+func init() {
+	Register("tcpdump", handleTcpdump)
+}
+
+// handleTcpdump handles the tcpdump command.
+// Interface flag (-i) collapses the next arg to <val>.
+// File flags (-w, -r, -F, -V) collapse the next arg to <path>.
+// Numeric flags (-c, -s, -C, -W, -G, -B) collapse the next arg to N.
+// Val flags (-E, -T, -z, -Z, -y, -Q, -j, --time-stamp-precision) collapse the next arg to <val>.
+// All positionals are BPF filter tokens and collapse to <filter>.
+func handleTcpdump(subcommand string, tokens []string) []string {
+	args, redirects := splitRedirects(tokens)
+
+	pathFlags := map[string]bool{
+		"-w": true, "-r": true, "-F": true, "-V": true,
+	}
+
+	numericFlags := map[string]bool{
+		"-c": true, "-s": true, "--snapshot-length": true,
+		"-C": true, "-W": true, "-G": true,
+		"-B": true, "--buffer-size": true,
+	}
+
+	valFlags := map[string]bool{
+		"-i": true, "--interface": true,
+		"-E": true, "-T": true,
+		"-z": true, "-Z": true, "--relinquish-privileges": true,
+		"-y": true, "--linktype": true,
+		"-Q": true, "--direction": true,
+		"-j": true, "--time-stamp-type": true,
+		"--time-stamp-precision": true,
+	}
+
+	var result []string
+	i := 0
+	for i < len(args) {
+		tok := args[i]
+
+		if isSubshellToken(tok) {
+			result = append(result, tok)
+			i++
+			continue
+		}
+
+		if pathFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, "<path>")
+				}
+				i++
+			}
+			continue
+		}
+
+		if numericFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, "N")
+				}
+				i++
+			}
+			continue
+		}
+
+		if valFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				if isSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, "<val>")
+				}
+				i++
+			}
+			continue
+		}
+
+		if isFlagToken(tok) {
+			result = append(result, tok)
+			i++
+			continue
+		}
+
+		// Positional: BPF filter token
+		result = append(result, "<filter>")
+		i++
+	}
+
+	result = append(result, redirects...)
+	return result
+}

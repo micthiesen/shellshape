@@ -1,0 +1,170 @@
+package shellshape
+
+func init() {
+	Register("split", handleSplit)
+	Register("csplit", handleCsplit)
+}
+
+// handleSplit handles the split command.
+// -l (line count) and -n (chunk count) consume the next token as N.
+// -b (byte count, e.g. 10M) consumes the next token as <size>.
+// -a (suffix length) consumes the next token as N.
+// -p (pattern) consumes the next token as <pattern>.
+// -c, -d are boolean flags.
+// First positional is the input file (classifyToken), second is the output prefix (<prefix>).
+func handleSplit(subcommand string, tokens []string) []string {
+	args, redirects := splitRedirects(tokens)
+
+	numericFlags := map[string]bool{"-l": true, "-n": true, "-a": true}
+
+	var result []string
+	positionalIndex := 0
+
+	i := 0
+	for i < len(args) {
+		tok := args[i]
+
+		if isSubshellToken(tok) {
+			result = append(result, tok)
+			i++
+			positionalIndex++
+			continue
+		}
+
+		// Flags that consume a numeric argument
+		if numericFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) {
+				result = append(result, "N")
+				i++
+			}
+			continue
+		}
+
+		// -b consumes a size argument (e.g. 10M, 512k)
+		if tok == "-b" {
+			result = append(result, "-b")
+			i++
+			if i < len(args) {
+				result = append(result, "<size>")
+				i++
+			}
+			continue
+		}
+
+		// -p consumes a pattern argument
+		if tok == "-p" {
+			result = append(result, "-p")
+			i++
+			if i < len(args) {
+				result = append(result, "<pattern>")
+				i++
+			}
+			continue
+		}
+
+		// Other flags (boolean or long-form)
+		if isFlagToken(tok) {
+			result = append(result, classifyToken(tok))
+			i++
+			continue
+		}
+
+		// Positionals: first is file, second is prefix
+		if positionalIndex == 0 {
+			result = append(result, classifyToken(tok))
+		} else {
+			result = append(result, "<prefix>")
+		}
+		positionalIndex++
+		i++
+	}
+
+	result = append(result, redirects...)
+	return result
+}
+
+// handleCsplit handles the csplit command.
+// -f (prefix) consumes the next token as <prefix>.
+// -n (digit count) consumes the next token as N.
+// -b (suffix format, GNU) consumes the next token as <format>.
+// -k, -s are boolean flags.
+// First positional is the input file (classifyToken).
+// Remaining positionals are split arguments (patterns, line numbers, repeat specs) → <split-arg>.
+func handleCsplit(subcommand string, tokens []string) []string {
+	args, redirects := splitRedirects(tokens)
+
+	var result []string
+	positionalIndex := 0
+
+	i := 0
+	for i < len(args) {
+		tok := args[i]
+
+		if isSubshellToken(tok) {
+			result = append(result, tok)
+			i++
+			positionalIndex++
+			continue
+		}
+
+		// -f consumes a prefix argument
+		if tok == "-f" {
+			result = append(result, "-f")
+			i++
+			if i < len(args) {
+				result = append(result, "<prefix>")
+				i++
+			}
+			continue
+		}
+
+		// -n consumes a numeric argument
+		if tok == "-n" {
+			result = append(result, "-n")
+			i++
+			if i < len(args) {
+				result = append(result, "N")
+				i++
+			}
+			continue
+		}
+
+		// -b consumes a suffix format argument (GNU extension)
+		if tok == "-b" {
+			result = append(result, "-b")
+			i++
+			if i < len(args) {
+				result = append(result, "<format>")
+				i++
+			}
+			continue
+		}
+
+		// Other flags (boolean: -k, -s, or long-form)
+		if isFlagToken(tok) {
+			result = append(result, classifyToken(tok))
+			i++
+			continue
+		}
+
+		// Positionals
+		if positionalIndex == 0 {
+			// First positional: input file (or "-" for stdin)
+			if tok == "-" {
+				result = append(result, "-")
+			} else {
+				result = append(result, classifyToken(tok))
+			}
+		} else {
+			// Remaining positionals: split arguments (patterns, line numbers, repeat specs)
+			result = append(result, "<split-arg>")
+		}
+		positionalIndex++
+		i++
+	}
+
+	result = append(result, redirects...)
+	return result
+}
