@@ -8,6 +8,10 @@ argument-hint: <executable-name>
 
 You are adding a handler for `$ARGUMENTS` to the shellshape normalizer. Follow this process exactly.
 
+## Step 0: Check for an existing handler to alias
+
+If the command is functionally identical to an existing handler (same flag grammar and positional semantics), just add it as an alias in that handler's `init()` instead of creating a new handler file. Add test cases for the new name to the existing test file and you're done.
+
 ## Step 1: Research the command
 
 Understand how `$ARGUMENTS` is actually used. You need to know:
@@ -20,8 +24,8 @@ Understand how `$ARGUMENTS` is actually used. You need to know:
 
 Do this research by:
 
-1. Run `man $ARGUMENTS 2>/dev/null | head -200` or `$ARGUMENTS --help 2>&1 | head -80` to get the flag reference
-2. Search the web for common usage patterns and examples
+1. Run `curl -s 'cheat.sh/$ARGUMENTS?T'` to get a quick reference with common flags and examples
+2. If you need more detail (e.g. obscure flags, exact argument semantics), look up the official man pages online or use other sources
 3. Think about what tokens are **data** (should collapse) vs **structure** (should stay verbatim)
 
 ## Step 2: Design the normalization rules

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Read(//usr/local/go/bin/**)",
-      "Read(//opt/homebrew/bin/**)"
+      "Read(//opt/homebrew/bin/**)",
+      "mcp__fff__find_files"
     ]
   }
 }
