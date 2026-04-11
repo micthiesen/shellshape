@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	shellshape "github.com/mthiesen/shellshape"
+	shellshape "github.com/micthiesen/shellshape"
 )
 
 func main() {

@@ -20,13 +20,13 @@ URLs, hashes, or quoted data.
 ## Install
 
 ```bash
-go install github.com/mthiesen/shellshape/cmd/shellshape@latest
+go install github.com/micthiesen/shellshape/cmd/shellshape@latest
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/mthiesen/shellshape.git
+git clone https://github.com/micthiesen/shellshape.git
 cd shellshape
 go build -o /usr/local/bin/shellshape ./cmd/shellshape
 ```
@@ -87,7 +87,7 @@ always produce different shapes. This is enforced by tests on every handler.
 ## Use as a library
 
 ```go
-import shellshape "github.com/mthiesen/shellshape"
+import shellshape "github.com/micthiesen/shellshape"
 
 shape := shellshape.Normalize("git log --oneline -10")
 // "git log --oneline N"

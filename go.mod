@@ -1,3 +1,3 @@
-module github.com/mthiesen/shellshape
+module github.com/micthiesen/shellshape
 
 go 1.26.1
