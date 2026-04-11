@@ -39,7 +39,7 @@ If one executable has many distinct shapes, that's suspicious. Some commands gen
 
 For each normalization problem, determine which category it falls into:
 
-1. **Missing handler**: The command has no handler and needs one (e.g., `curl`, `jq`, `awk`). These commands have argument semantics that the generic classifier can't see.
+1. **Missing handler**: The command has no handler and needs one. These commands have argument semantics that the generic classifier can't see.
 2. **Handler bug**: The command has a handler but it's not covering a specific flag or positional pattern.
 3. **Token classification bug**: The generic `classifyToken` function is failing to recognize a data pattern (new URL scheme, unusual path format, etc.)
 

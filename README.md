@@ -4,18 +4,20 @@ Normalize shell commands into stable "shapes" for use as cache keys,
 fingerprints, or classification inputs.
 
 ```
+$ shellshape "curl -s -H 'Auth: Bearer tok123' https://api.example.com/users | jq '.data[]'"
+curl -s -H <header> <https-uri> | jq <filter>
+
 $ shellshape "git log abc1234..HEAD --oneline -10"
 git log <range> --oneline N
 
-$ shellshape "grep -rn 'TODO' src/"
-grep -rn <pattern> <path>
-
-$ shellshape "FOO=bar python3 -c 'print(1)'"
-FOO=<val> python3 -c <code>
+$ shellshape "docker run --rm -v /home/app:/app -p 8080:80 nginx:latest"
+docker run --rm -v <val> -p <val> nginx:latest
 ```
 
 Same logical command, same shape, regardless of specific paths, numbers,
-URLs, hashes, or quoted data.
+URLs, hashes, or quoted data. Over 240 commands have specialized handlers
+that understand their flag grammar (what takes an argument, what's boolean,
+what's structural vs data).
 
 ## Install
 
@@ -66,6 +68,10 @@ shellshape < commands.txt
 | `# comment` | stripped | Comments are noise |
 | `\`+newline | joined | Line continuations |
 
+Per-command handlers add domain-specific placeholders beyond the generic
+rules above. For example, `curl -H` collapses to `<header>`, `grep`'s
+first positional becomes `<pattern>`, and `jq`'s filter becomes `<filter>`.
+
 ### Subshell safety
 
 Subshell expressions like `$(...)` are recursively normalized but never
@@ -75,25 +81,35 @@ always produce different shapes. This is enforced by tests on every handler.
 ## Use as a library
 
 ```go
-import shellshape "github.com/micthiesen/shellshape"
+import (
+    "github.com/micthiesen/shellshape"
+    _ "github.com/micthiesen/shellshape/handlers" // register all handlers
+)
 
-shape := shellshape.Normalize("git log --oneline -10")
-// "git log --oneline N"
+shape := shellshape.Normalize("curl -s https://api.example.com | jq '.data'")
+// "curl -s <https-uri> | jq <filter>"
 
 exe := shellshape.ExecutableOf(shape)
-// "git"
+// "curl"
 ```
+
+The blank import of `handlers` is required to register all per-command
+handlers via their `init()` functions. Without it, only the generic token
+classifier runs.
 
 ## Adding a handler
 
-Each handler is a self-contained file that registers itself via `init()`:
+Each handler is a self-contained file in the `handlers/` package that registers
+itself via `init()`:
 
 ```go
-// handler_curl.go
-package shellshape
+// handlers/curl.go
+package handlers
+
+import shellshape "github.com/micthiesen/shellshape"
 
 func init() {
-    Register("curl", handleCurl)
+    shellshape.Register("curl", handleCurl)
 }
 
 func handleCurl(subcommand string, tokens []string) []string {
@@ -105,13 +121,13 @@ No other files need to be modified. For commands with subcommands (like `docker 
 
 ```go
 func init() {
-    Register("docker", handleDocker, HandlerOptions{HasSubcommands: true})
+    shellshape.Register("docker", handleDocker, shellshape.HandlerOptions{HasSubcommands: true})
 }
 ```
 
 Every handler must:
-1. Call `splitRedirects(tokens)` first
-2. Check `isSubshellToken(tok)` before collapsing any positional
+1. Call `shellshape.SplitRedirects(tokens)` first
+2. Check `shellshape.IsSubshellToken(tok)` before collapsing any positional
 3. Have a subshell safety test
 
 PRs for new handlers are welcome. Handlers target the latest version of each

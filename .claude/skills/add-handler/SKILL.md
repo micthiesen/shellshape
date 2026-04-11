@@ -42,11 +42,18 @@ Share this plan with the user before proceeding.
 
 ## Step 3: Write the test file first (TDD)
 
-Create `handler_$ARGUMENTS_test.go`. Follow the exact pattern from existing handler tests.
+Create `handlers/$ARGUMENTS_test.go`. Follow the exact pattern from existing handler tests.
 
 Structure your tests in these categories:
 
 ```go
+package handlers
+
+import (
+    shellshape "github.com/micthiesen/shellshape"
+    "testing"
+)
+
 func TestCommandName(t *testing.T) {
     tests := []struct {
         name  string
@@ -65,8 +72,8 @@ func TestCommandName(t *testing.T) {
 
     // SAFETY TEST: subshell must not collapse (one per handler, mandatory)
     t.Run("subshell not collapsed", func(t *testing.T) {
-        benign := Normalize("$ARGUMENTS literal-arg")
-        subshell := Normalize("$ARGUMENTS $(dangerous-command)")
+        benign := shellshape.Normalize("$ARGUMENTS literal-arg")
+        subshell := shellshape.Normalize("$ARGUMENTS $(dangerous-command)")
         if benign == subshell {
             t.Error("subshell must produce different shape than literal")
         }
@@ -82,17 +89,19 @@ go test ./... -run TestCommandName -v
 
 ## Step 4: Implement the handler
 
-Create `handler_$ARGUMENTS.go`. The handler self-registers via `init()`, so no other files need to be modified. Use this template:
+Create `handlers/$ARGUMENTS.go`. The handler self-registers via `init()`, so no other files need to be modified. Use this template:
 
 ```go
-package shellshape
+package handlers
+
+import shellshape "github.com/micthiesen/shellshape"
 
 func init() {
-    Register("$ARGUMENTS", handleCommandName)
+    shellshape.Register("$ARGUMENTS", handleCommandName)
 }
 
 func handleCommandName(subcommand string, tokens []string) []string {
-    args, redirects := splitRedirects(tokens)
+    args, redirects := shellshape.SplitRedirects(tokens)
 
     var result []string
     // ... your logic here ...
@@ -107,7 +116,7 @@ If the command has aliases (like grep/egrep/fgrep), register all of them in init
 ```go
 func init() {
     for _, name := range []string{"$ARGUMENTS", "alias1", "alias2"} {
-        Register(name, handleCommandName)
+        shellshape.Register(name, handleCommandName)
     }
 }
 ```
@@ -116,23 +125,23 @@ If the command has subcommands (like `docker run`, `git commit`), pass `HandlerO
 
 ```go
 func init() {
-    Register("$ARGUMENTS", handleCommandName, HandlerOptions{HasSubcommands: true})
+    shellshape.Register("$ARGUMENTS", handleCommandName, shellshape.HandlerOptions{HasSubcommands: true})
 }
 ```
 
 Key rules:
-- Always call `splitRedirects(tokens)` first, append redirects at end
-- Always check `isSubshellToken(tok)` BEFORE collapsing any positional to a placeholder
-- Use `isFlagToken(tok)` to distinguish flags from positionals
-- Use `classifyToken(tok)` for positionals that should get generic classification (usually file paths)
+- Always call `shellshape.SplitRedirects(tokens)` first, append redirects at end
+- Always check `shellshape.IsSubshellToken(tok)` BEFORE collapsing any positional to a placeholder
+- Use `shellshape.IsFlagToken(tok)` to distinguish flags from positionals
+- Use `shellshape.ClassifyToken(tok)` for positionals that should get generic classification (usually file paths)
 - Walk tokens with an index variable (`i`), not `range`, when flags consume next args
 - Use the shared utilities from `handler.go` for flag processing (read the file to see what's available):
-  - `consumeFlagArg(tok, args, i, result, "<placeholder>")` to consume a flag and its next token (handles subshell preservation automatically)
-  - `flagCategory` + `matchFlagCategory` to replace repetitive if/else chains when you have 3+ flag categories
-  - `consumeFusedFlag(tok, categories)` to handle `--flag=value` syntax
-- When a handler has 3+ flag categories (e.g. pathFlags, valFlags, numericFlags), define a `categories` slice and use `matchFlagCategory` in the loop instead of sequential if blocks
+  - `shellshape.ConsumeFlagArg(tok, args, i, result, "<placeholder>")` to consume a flag and its next token (handles subshell preservation automatically)
+  - `shellshape.FlagCategory` + `shellshape.MatchFlagCategory` to replace repetitive if/else chains when you have 3+ flag categories
+  - `shellshape.ConsumeFusedFlag(tok, categories)` to handle `--flag=value` syntax
+- When a handler has 3+ flag categories (e.g. pathFlags, valFlags, numericFlags), define a `categories` slice and use `shellshape.MatchFlagCategory` in the loop instead of sequential if blocks
 
-Reference `handler_grep.go` for a handler with flag-consuming arguments, or `handler_echo.go` for a simple positional-collapsing handler.
+Reference `handlers/grep.go` for a handler with flag-consuming arguments, or `handlers/echo.go` for a simple positional-collapsing handler.
 
 ## Step 5: Run tests and iterate
 
