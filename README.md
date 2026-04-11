@@ -1,6 +1,4 @@
-# shellshape
-
-[![CI](https://github.com/micthiesen/shellshape/actions/workflows/ci.yml/badge.svg)](https://github.com/micthiesen/shellshape/actions/workflows/ci.yml)
+# shellshape [![CI](https://github.com/micthiesen/shellshape/actions/workflows/ci.yml/badge.svg)](https://github.com/micthiesen/shellshape/actions/workflows/ci.yml)
 
 Normalize shell commands into stable "shapes" for use as cache keys,
 fingerprints, or classification inputs.
