@@ -98,19 +98,26 @@ exe := shellshape.ExecutableOf(shape)
 
 ## Adding a handler
 
-Each handler is a function in its own file with a matching test file:
-
-```
-handler_curl.go           # func handleCurl(tokens []string) []string
-handler_curl_test.go      # end-to-end tests through Normalize()
-```
-
-Register it in `handler.go`:
+Each handler is a self-contained file that registers itself via `init()`:
 
 ```go
-var handlers = map[string]handlerFunc{
+// handler_curl.go
+package shellshape
+
+func init() {
+    Register("curl", handleCurl)
+}
+
+func handleCurl(subcommand string, tokens []string) []string {
     // ...
-    "curl": handleCurl,
+}
+```
+
+No other files need to be modified. For commands with subcommands (like `docker run`):
+
+```go
+func init() {
+    Register("docker", handleDocker, HandlerOptions{HasSubcommands: true})
 }
 ```
 
