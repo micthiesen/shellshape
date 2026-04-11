@@ -1,7 +1,9 @@
 package shellshape
 
 func init() {
-	Register("docker", handleDocker, HandlerOptions{HasSubcommands: true})
+	for _, name := range []string{"docker", "podman"} {
+		Register(name, handleDocker, HandlerOptions{HasSubcommands: true})
+	}
 }
 
 // handleDocker handles docker subcommand arguments.

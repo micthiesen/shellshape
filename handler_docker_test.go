@@ -101,3 +101,50 @@ func TestDocker(t *testing.T) {
 		}
 	})
 }
+
+func TestPodman(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Basic subcommands
+		{"run simple", "podman run nginx", "podman run nginx"},
+		{"run detached with name", "podman run -d --name myapp nginx", "podman run -d --name <val> nginx"},
+		{"run with port", "podman run -p 8080:80 nginx", "podman run -p <val> nginx"},
+		{"run with volume", "podman run -v /host:/container nginx", "podman run -v <val> nginx"},
+		{"run with env", "podman run -e SECRET=abc postgres", "podman run -e <val> postgres"},
+		{"build with tag", "podman build -t myapp:latest .", "podman build -t <val> ."},
+		{"exec interactive", "podman exec -it mycontainer sh", "podman exec -it mycontainer sh"},
+		{"compose up", "podman compose up -d", "podman compose up -d"},
+		{"run with workdir", "podman run -w /app node npm start", "podman run -w <path> node npm start"},
+		{"run full flags", "podman run -d --rm --name web -p 3000:80 -v /data:/data -e FOO=bar nginx", "podman run -d --rm --name <val> -p <val> -v <val> -e <val> nginx"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+
+	// COLLISION TESTS
+	t.Run("different port mappings collide", func(t *testing.T) {
+		a := Normalize("podman run -p 8080:80 nginx")
+		b := Normalize("podman run -p 3000:3000 nginx")
+		if a != b {
+			t.Errorf("expected %q == %q", a, b)
+		}
+	})
+
+	// SAFETY TEST
+	t.Run("subshell not collapsed", func(t *testing.T) {
+		benign := Normalize("podman run literal-arg")
+		subshell := Normalize("podman run $(dangerous-command)")
+		if benign == subshell {
+			t.Error("subshell must produce different shape than literal")
+		}
+	})
+}
