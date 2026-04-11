@@ -137,8 +137,9 @@ func normalizeSingleCommand(seg string) string {
 	exe := tokens[i]
 	i++
 
-	// Absolute-path executables: strip to basename.
-	if strings.HasPrefix(exe, "/") && strings.Contains(exe, "/") {
+	// Absolute-path or tilde-path executables: strip to basename.
+	// Relative paths (./script.sh, ../bin/run) are left alone.
+	if (strings.HasPrefix(exe, "/") || strings.HasPrefix(exe, "~")) && strings.Contains(exe, "/") {
 		parts := strings.Split(exe, "/")
 		exe = parts[len(parts)-1]
 	}

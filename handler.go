@@ -14,7 +14,9 @@ var handlers = map[string]handlerFunc{
 	"rg":     handleGrep,
 	"ag":     handleGrep,
 	"ack":    handleGrep,
-	"find":   handleFind,
+	"find":    handleFind,
+	"sqlite3": handleSqlite3,
+	"sqlite":  handleSqlite3,
 }
 
 var redirectConsumeNext = map[string]bool{

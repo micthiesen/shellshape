@@ -309,6 +309,8 @@ func TestNormalizeAbsoluteExecutable(t *testing.T) {
 	}{
 		{"absolute path exe", "/Users/michael/.dotfiles/claude/hooks/approvals/approvals show --always", "approvals show --always"},
 		{"absolute path exe with args", "/usr/local/bin/python3 -c 'print(1)'", "python3 -c <code>"},
+		{"tilde path exe", "~/.dotfiles/claude/hooks/approvals/approvals events --limit 5", "approvals events --limit N"},
+		{"tilde path exe with subcommand", "~/.local/bin/gh pr list", "gh pr list"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -318,6 +320,13 @@ func TestNormalizeAbsoluteExecutable(t *testing.T) {
 			}
 		})
 	}
+	t.Run("tilde and absolute paths collide", func(t *testing.T) {
+		a := Normalize("~/.dotfiles/bin/approvals doctor")
+		b := Normalize("/usr/local/bin/approvals doctor")
+		if a != b {
+			t.Errorf("expected %q == %q", a, b)
+		}
+	})
 	t.Run("different absolute paths collide", func(t *testing.T) {
 		a := Normalize("/opt/homebrew/bin/approvals doctor")
 		b := Normalize("/Users/michael/.local/bin/approvals doctor")
