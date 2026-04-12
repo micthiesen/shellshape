@@ -21,8 +21,9 @@ func TestShellshape(t *testing.T) {
 		{"command with pipes as single arg", `shellshape 'echo hello | grep h'`, "shellshape <command>"},
 		{"multiple words", "shellshape docker run -it ubuntu bash", "shellshape <command>"},
 
-		// List subcommand
+		// Subcommands
 		{"list subcommand", "shellshape list", "shellshape list"},
+		{"version subcommand", "shellshape version", "shellshape version"},
 
 		// With redirect
 		{"with redirect", "shellshape echo hi > /tmp/out.txt", "shellshape <command> > <path>"},

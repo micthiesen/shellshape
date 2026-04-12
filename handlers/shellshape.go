@@ -13,9 +13,9 @@ func init() {
 func handleShellshape(subcommand string, tokens []string) []string {
 	args, redirects := shellshape.SplitRedirects(tokens)
 
-	// "list" subcommand has no args to normalize.
-	if len(args) > 0 && args[0] == "list" {
-		return append([]string{"list"}, redirects...)
+	// Subcommands with no args to normalize.
+	if len(args) > 0 && (args[0] == "list" || args[0] == "version") {
+		return append([]string{args[0]}, redirects...)
 	}
 
 	var result []string

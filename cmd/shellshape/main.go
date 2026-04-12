@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	shellshape "github.com/micthiesen/shellshape"
@@ -12,6 +13,10 @@ import (
 
 func main() {
 	if len(os.Args) > 1 {
+		if os.Args[1] == "version" {
+			fmt.Println(versionString())
+			return
+		}
 		if os.Args[1] == "list" {
 			for _, name := range shellshape.RegisteredHandlers() {
 				fmt.Println(name)
@@ -45,4 +50,35 @@ func main() {
 		fmt.Fprintf(os.Stderr, "shellshape: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func versionString() string {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "shellshape (unknown)"
+	}
+	var revision, time string
+	var dirty bool
+	for _, s := range info.Settings {
+		switch s.Key {
+		case "vcs.revision":
+			revision = s.Value
+		case "vcs.time":
+			time = s.Value
+		case "vcs.modified":
+			dirty = s.Value == "true"
+		}
+	}
+	if revision == "" {
+		return "shellshape (dev)"
+	}
+	short := revision
+	if len(short) > 7 {
+		short = short[:7]
+	}
+	v := "shellshape " + short + " (" + time + ")"
+	if dirty {
+		v += " dirty"
+	}
+	return v
 }
