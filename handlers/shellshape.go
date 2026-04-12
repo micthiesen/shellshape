@@ -7,10 +7,16 @@ func init() {
 }
 
 // handleShellshape handles the shellshape command itself.
-// All positional arguments are the input command being analyzed,
+// "list" subcommand is kept structural (no args to normalize).
+// All other positional arguments are the input command being analyzed,
 // so they collapse to a single <command> placeholder. Subshells are preserved.
 func handleShellshape(subcommand string, tokens []string) []string {
 	args, redirects := shellshape.SplitRedirects(tokens)
+
+	// "list" subcommand has no args to normalize.
+	if len(args) > 0 && args[0] == "list" {
+		return append([]string{"list"}, redirects...)
+	}
 
 	var result []string
 	hasPositional := false
