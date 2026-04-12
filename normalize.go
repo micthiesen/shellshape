@@ -23,13 +23,13 @@ func Normalize(command string) string {
 	parts := splitTopLevel(command, splitOps)
 
 	if len(parts) == 1 && parts[0].sep == "" {
-		return collapseRepeatedPlaceholders(normalizeSingleCommand(parts[0].text))
+		return collapseRepeatedPlaceholders(normalizeSegment(parts[0].text))
 	}
 
 	var rendered []string
 	lastWasSegment := false
 	for _, part := range parts {
-		seg := normalizeSingleCommand(strings.TrimSpace(part.text))
+		seg := normalizeSegment(strings.TrimSpace(part.text))
 		if seg != "" {
 			rendered = append(rendered, seg)
 			lastWasSegment = true
@@ -91,6 +91,15 @@ var codeFlags = map[string]bool{"-c": true, "-e": true, "--command": true}
 
 // Shells used as script runners.
 var shellScriptRunners = map[string]bool{"bash": true, "sh": true, "zsh": true}
+
+// normalizeSegment routes a single segment to either compound or simple normalization.
+func normalizeSegment(seg string) string {
+	seg = strings.TrimSpace(seg)
+	if isCompoundCommand(seg) {
+		return normalizeCompound(seg)
+	}
+	return normalizeSingleCommand(seg)
+}
 
 func normalizeSingleCommand(seg string) string {
 	seg = strings.TrimSpace(seg)

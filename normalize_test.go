@@ -731,6 +731,78 @@ func TestNormalizeCoreEdgeCases(t *testing.T) {
 	}
 }
 
+func TestNormalizeForLoop(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Basic for-in loop
+		{"simple for loop", "for f in *.go; do echo $f; done", "for f in <val>+ ; do echo <str> ; done"},
+		// For loop with multiple values
+		{"for with values", "for cmd in doctor test show stats; do python3 app $cmd --help; done", "for cmd in <val>+ ; do python3 app <arg>+ ; done"},
+		// For loop with && in body
+		{"for with and in body", "for x in a b c; do echo $x && rm $x; done", "for x in <val>+ ; do echo <str> && rm $x ; done"},
+		// For loop with pipe in body
+		{"for with pipe in body", "for f in *.log; do cat $f | grep <pattern>; done", "for f in <val>+ ; do cat $f | grep <pattern> ; done"},
+		// For loop chained with outer command
+		{"for then and", "for f in a b; do echo $f; done && echo all done", "for f in <val>+ ; do echo <str> ; done && echo <str>"},
+		// Nested for loops
+		{"nested for", "for x in 1 2; do for y in a b; do echo $x $y; done; done", "for x in <val>+ ; do for y in <val>+ ; do echo <str> ; done ; done"},
+		// C-style for loop (no in-list)
+		{"c-style for", "for ((i=0; i<10; i++)); do echo $i; done", "for ((<expr>)) ; do echo <str> ; done"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q)\n  got  %q\n  want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeWhileUntilLoop(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"while loop", "while read line; do echo $line; done", "while read line ; do echo <str> ; done"},
+		{"until loop", "until test -f /tmp/ready; do sleep 1; done", "until test -f <path> ; do sleep N ; done"},
+		{"while with redirect", "while read line; do echo $line; done < /tmp/input", "while read line ; do echo <str> ; done < <path>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q)\n  got  %q\n  want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeIfStatement(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"simple if", "if test -f /tmp/x; then echo yes; fi", "if test -f <path> ; then echo <str> ; fi"},
+		{"if else", "if test -f /tmp/x; then echo yes; else echo no; fi", "if test -f <path> ; then echo <str> ; else echo <str> ; fi"},
+		{"if elif", "if test -f a; then echo a; elif test -f b; then echo b; fi", "if test -f a ; then echo <str> ; elif test -f b ; then echo <str> ; fi"},
+		{"if chained", "if test -f x; then echo y; fi && echo done", "if test -f x ; then echo <str> ; fi && echo <str>"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q)\n  got  %q\n  want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestExecutableOfEdgeCases(t *testing.T) {
 	tests := []struct {
 		input string
