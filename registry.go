@@ -1,5 +1,7 @@
 package shellshape
 
+import "sort"
+
 // HandlerOptions configures how a command is normalized.
 type HandlerOptions struct {
 	// HasSubcommands indicates the second positional token is a subcommand
@@ -25,6 +27,23 @@ func Register(name string, fn HandlerFunc, opts ...HandlerOptions) {
 
 func hasSubcommands(exe string) bool {
 	return handlerOptions[exe].HasSubcommands
+}
+
+// RegisteredHandlers returns a sorted list of all registered command names.
+func RegisteredHandlers() []string {
+	seen := make(map[string]bool)
+	for name := range handlers {
+		seen[name] = true
+	}
+	for name := range handlerOptions {
+		seen[name] = true
+	}
+	names := make([]string, 0, len(seen))
+	for name := range seen {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }
 
 func init() {

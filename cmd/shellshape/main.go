@@ -12,6 +12,12 @@ import (
 
 func main() {
 	if len(os.Args) > 1 {
+		if os.Args[1] == "list" {
+			for _, name := range shellshape.RegisteredHandlers() {
+				fmt.Println(name)
+			}
+			return
+		}
 		input := strings.Join(os.Args[1:], " ")
 		fmt.Println(shellshape.Normalize(input))
 		return
@@ -22,6 +28,7 @@ func main() {
 	if stat.Mode()&os.ModeCharDevice != 0 {
 		fmt.Fprintln(os.Stderr, "Usage: shellshape <command>")
 		fmt.Fprintln(os.Stderr, "       echo <command> | shellshape")
+		fmt.Fprintln(os.Stderr, "       shellshape list")
 		os.Exit(1)
 	}
 
