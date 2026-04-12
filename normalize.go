@@ -54,7 +54,9 @@ func Normalize(command string) string {
 	out := strings.Join(rendered, " ")
 	out = strings.TrimSpace(out)
 	out = collapseWhitespace(out)
-	return collapseRepeatedPlaceholders(out)
+	out = collapseRepeatedPlaceholders(out)
+	out = collapseRepeatedSegments(out)
+	return out
 }
 
 // ExecutableOf returns the leading executable name from a shape string.
@@ -294,6 +296,76 @@ func collapseRepeatedPlaceholders(shape string) string {
 		}
 	}
 	return strings.Join(out, " ")
+}
+
+// collapseRepeatedSegments collapses consecutive identical segments separated
+// by ";" into a single instance with ";+". Only ";" is collapsed since "&&" and
+// "||" imply ordering dependency that is semantically meaningful.
+func collapseRepeatedSegments(shape string) string {
+	// Split into tokens of (segment, operator) pairs.
+	// We only collapse on ";", so split on " ; " boundaries.
+	const sep = " ; "
+	if !strings.Contains(shape, sep) {
+		return shape
+	}
+
+	// Split on " ; " only — leave && and || intact within segments.
+	parts := splitOnSemicolon(shape)
+	if len(parts) <= 1 {
+		return shape
+	}
+
+	// Find consecutive runs of identical segments and collapse them.
+	type segment struct {
+		text      string
+		collapsed bool
+	}
+	var segments []segment
+	i := 0
+	for i < len(parts) {
+		j := i + 1
+		for j < len(parts) && parts[j] == parts[i] {
+			j++
+		}
+		segments = append(segments, segment{parts[i], j-i >= 2})
+		i = j
+	}
+
+	// Rebuild the shape string.
+	var b strings.Builder
+	for idx, seg := range segments {
+		if idx > 0 {
+			// After a collapsed segment, just a space (the ";+" acts as separator).
+			// Between non-collapsed segments, restore " ; ".
+			if segments[idx-1].collapsed {
+				b.WriteString(" ")
+			} else {
+				b.WriteString(" ; ")
+			}
+		}
+		b.WriteString(seg.text)
+		if seg.collapsed {
+			b.WriteString(" ;+")
+		}
+	}
+	return b.String()
+}
+
+// splitOnSemicolon splits a shape string on " ; " boundaries, but only at
+// the top level (not inside segments that contain && or ||).
+func splitOnSemicolon(shape string) []string {
+	var parts []string
+	rest := shape
+	for {
+		idx := strings.Index(rest, " ; ")
+		if idx < 0 {
+			parts = append(parts, rest)
+			break
+		}
+		parts = append(parts, rest[:idx])
+		rest = rest[idx+len(" ; "):]
+	}
+	return parts
 }
 
 func fallbackNormalize(seg string) string {

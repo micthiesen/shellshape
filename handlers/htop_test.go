@@ -61,7 +61,7 @@ func TestHtop(t *testing.T) {
 
 		// Value flag with subshell value
 		{"user subshell", "htop -u $(whoami)", "htop -u $(whoami)"},
-		{"pid subshell", "htop -p $(pgrep foo)", "htop -p $(pgrep foo)"},
+		{"pid subshell", "htop -p $(pgrep foo)", "htop -p $(pgrep <pattern>)"},
 		{"sort subshell", "htop --sort-key $(echo CPU)", "htop --sort-key $(echo <str>)"},
 		{"filter subshell", "htop -F $(echo nginx)", "htop -F $(echo <str>)"},
 

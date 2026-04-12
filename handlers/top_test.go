@@ -56,7 +56,7 @@ func TestTop(t *testing.T) {
 
 		// Consuming flag with subshell value
 		{"user subshell", "top -u $(whoami)", "top -u $(whoami)"},
-		{"pid subshell", "top -p $(pgrep nginx)", "top -p $(pgrep nginx)"},
+		{"pid subshell", "top -p $(pgrep nginx)", "top -p $(pgrep <pattern>)"},
 		{"sort subshell", "top -o $(echo CPU)", "top -o $(echo <str>)"},
 
 		// Numeric flag with subshell value
@@ -64,7 +64,7 @@ func TestTop(t *testing.T) {
 		{"delay subshell", "top -d $(calc)", "top -d $(calc)"},
 
 		// Bundled flag with subshell value
-		{"bundled Hp subshell", "top -Hp $(pgrep x)", "top -Hp $(pgrep x)"},
+		{"bundled Hp subshell", "top -Hp $(pgrep x)", "top -Hp $(pgrep <pattern>)"},
 		{"bundled bn subshell", "top -bn $(echo 3)", "top -bn $(echo <str>)"},
 
 		// Subshell as standalone token

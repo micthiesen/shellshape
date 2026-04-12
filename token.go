@@ -9,7 +9,7 @@ import (
 var (
 	headVariantRE = regexp.MustCompile(`^HEAD(?:[~^][~^\d]*|@\{[^}]*\})$`)
 
-	pathExtensionsRE = regexp.MustCompile(`(?i)\.(?:py|js|ts|tsx|jsx|go|rs|rb|java|kt|swift|c|cc|cpp|h|hpp|md|mdx|txt|json|jsonc|yaml|yml|toml|ini|cfg|conf|sh|bash|zsh|fish|sql|html|htm|css|scss|sass|less|lock|log|csv|tsv|xml|plist|png|jpg|jpeg|gif|svg|webp|ico|pdf|zip|tar|gz|bz2|xz|7z|rar|dmg|env|gitignore|dockerignore|editorconfig|prettierrc|eslintrc|pem|crt|csr|der|p12|pfx|key|cer)$`)
+	pathExtensionsRE = regexp.MustCompile(`(?i)\.(?:py|js|ts|tsx|jsx|go|rs|rb|java|kt|swift|c|cc|cpp|h|hpp|md|mdx|txt|json|jsonc|yaml|yml|toml|ini|cfg|conf|sh|bash|zsh|fish|sql|html|htm|css|scss|sass|less|lock|log|csv|tsv|xml|plist|png|jpg|jpeg|gif|svg|webp|ico|pdf|mp3|mp4|m4a|m4v|mkv|avi|mov|wmv|flv|webm|flac|wav|ogg|aac|opus|wma|ts|zip|tar|gz|bz2|xz|zst|7z|rar|dmg|env|gitignore|dockerignore|editorconfig|prettierrc|eslintrc|pem|crt|csr|der|p12|pfx|key|cer)$`)
 
 	uuidRE = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 

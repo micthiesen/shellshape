@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	for _, name := range []string{"grep", "egrep", "fgrep", "rg", "ag", "ack"} {
+	for _, name := range []string{"grep", "egrep", "fgrep", "ag", "ack"} {
 		shellshape.Register(name, handleGrep)
 	}
 }

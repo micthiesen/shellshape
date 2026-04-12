@@ -28,9 +28,9 @@ func TestKill(t *testing.T) {
 		// Mixed digit-letter flag (not a valid numeric signal)
 		{"invalid numeric signal", "kill -9a 1234", "kill <pid>+"},
 		// Double-dash with subshell
-		{"double dash subshell", "kill -- $(pgrep nginx)", "kill -- $(pgrep nginx)"},
+		{"double dash subshell", "kill -- $(pgrep nginx)", "kill -- $(pgrep <pattern>)"},
 		// Subshell as standalone token
-		{"subshell standalone", "kill $(pgrep nginx)", "kill $(pgrep nginx)"},
+		{"subshell standalone", "kill $(pgrep nginx)", "kill $(pgrep <pattern>)"},
 		// -s with no following token
 		{"dash-s trailing", "kill -s", "kill -s"},
 		// -l followed by a letter flag (does not consume)

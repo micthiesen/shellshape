@@ -17,7 +17,6 @@ func TestGrep(t *testing.T) {
 		{"multiple patterns", "grep -e foo -e bar file.txt", "grep -e <pattern> -e <pattern> <path>"},
 		{"pattern only", "grep pattern", "grep <pattern>"},
 		{"egrep", "egrep 'foo|bar' file.txt", "egrep <pattern> <path>"},
-		{"rg", "rg 'todo' src/", "rg <pattern> <path>"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

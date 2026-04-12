@@ -487,14 +487,14 @@ func TestNormalizeSubshellComplex(t *testing.T) {
 		// Operators inside subshells stay contained
 		{"subshell with pipe", "echo $(ls /tmp | head)", "echo $(ls <path> | head)"},
 		{"subshell with and", "echo $(cd /tmp && ls)", "echo $(cd <path> && ls)"},
-		{"subshell with semicolon", "echo $(echo hi; echo bye)", "echo $(echo <str> ; echo <str>)"},
+		{"subshell with semicolon", "echo $(echo hi; echo bye)", "echo $(echo <str> ;+)"},
 
 		// Nested subshells
 		{"nested subshell", "echo $(echo $(git status))", "echo $(echo $(git status))"},
 		{"nested subshell with path", "echo $(cat $(find . -name foo.go))", "echo $(cat $(find . -name <pattern>))"},
 
 		// Subshells with newlines inside
-		{"subshell with newlines", "echo $(echo foo\necho bar)", "echo $(echo <str> ; echo <str>)"},
+		{"subshell with newlines", "echo $(echo foo\necho bar)", "echo $(echo <str> ;+)"},
 
 		// Multiple subshells in one command
 		{"two subshells", "echo $(whoami) $(pwd)", "echo $(whoami) $(pwd)"},
@@ -801,6 +801,87 @@ func TestNormalizeIfStatement(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCollapseRepeatedSegments(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		// Basic: identical segments separated by ;
+		{
+			"two identical sed",
+			`sed -i 's/foo/bar/' file1.txt ; sed -i 's/foo/bar/' file2.txt`,
+			"sed -i <sed-expr> <path> ;+",
+		},
+		{
+			"three identical grep",
+			`grep -n pattern /a ; grep -n pattern /b ; grep -n pattern /c`,
+			"grep -n <pattern> <path> ;+",
+		},
+		// Single segment: no collapse
+		{
+			"single command",
+			`sed -i 's/foo/bar/' file1.txt`,
+			"sed -i <sed-expr> <path>",
+		},
+		// Non-identical segments: no collapse
+		{
+			"different commands",
+			`sed -i 's/foo/bar/' file1.txt ; echo done`,
+			"sed -i <sed-expr> <path> ; echo <str>",
+		},
+		// Partial run: only the repeated portion collapses
+		{
+			"prefix then repeated",
+			`echo start ; sed -i 's/x/y/' a.txt ; sed -i 's/x/y/' b.txt`,
+			"echo <str> ; sed -i <sed-expr> <path> ;+",
+		},
+		{
+			"repeated then suffix",
+			`sed -i 's/x/y/' a.txt ; sed -i 's/x/y/' b.txt ; echo done`,
+			"sed -i <sed-expr> <path> ;+ echo <str>",
+		},
+		// && separator: NOT collapsed (ordering dependency is meaningful)
+		{
+			"identical with &&",
+			`mkdir /tmp/a && mkdir /tmp/b`,
+			"mkdir <path> && mkdir <path>",
+		},
+		// ; only applies to ;
+		{
+			"mixed operators not collapsed",
+			`grep pattern /a ; grep pattern /b && echo found`,
+			"grep <pattern> <path> ; grep <pattern> <path> && echo <str>",
+		},
+		// Collision: different file counts produce same shape
+		{
+			"two vs three identical collapse to same",
+			"",
+			"",
+		},
+	}
+	for _, tt := range tests {
+		if tt.input == "" {
+			continue // placeholder for collision test below
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			got := Normalize(tt.input)
+			if got != tt.want {
+				t.Errorf("Normalize(%q)\n  got  %q\n  want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+
+	// Collision test: different repetition counts produce same shape
+	t.Run("two vs three identical collapse to same", func(t *testing.T) {
+		a := Normalize(`sed -i 's/foo/bar/' a.txt ; sed -i 's/foo/bar/' b.txt`)
+		b := Normalize(`sed -i 's/foo/bar/' a.txt ; sed -i 's/foo/bar/' b.txt ; sed -i 's/foo/bar/' c.txt`)
+		if a != b {
+			t.Errorf("expected same shape:\n  2x: %q\n  3x: %q", a, b)
+		}
+	})
 }
 
 func TestExecutableOfEdgeCases(t *testing.T) {

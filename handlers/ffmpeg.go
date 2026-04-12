@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	for _, name := range []string{"ffmpeg", "ffprobe"} {
+	for _, name := range []string{"ffmpeg"} {
 		shellshape.Register(name, handleFfmpeg)
 	}
 }
