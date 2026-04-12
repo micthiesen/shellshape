@@ -72,6 +72,24 @@ Per-command handlers add domain-specific placeholders beyond the generic
 rules above. For example, `curl -H` collapses to `<header>`, `grep`'s
 first positional becomes `<pattern>`, and `jq`'s filter becomes `<filter>`.
 
+### Compound commands
+
+Shell compound commands (`for`, `while`, `until`, `if`) are recognized as
+single structural units. Internal separators (`;`, `&&`, `|`) inside the
+compound don't split it apart, and the body is recursively normalized:
+
+```
+$ shellshape "for cmd in doctor test show stats; do python3 app \$cmd --help; done"
+for cmd in <val>+ ; do python3 app <arg>+ ; done
+
+$ shellshape "if test -f /tmp/config.yml; then cat /tmp/config.yml; else echo missing; fi"
+if test -f <path> ; then cat <path> ; else echo <str> ; fi
+```
+
+For-in iteration values are collapsed to `<val>+`. C-style `for ((...))` loop
+expressions are collapsed to `((<expr>))`. Nested compounds are handled
+correctly.
+
 ### Subshell safety
 
 Subshell expressions like `$(...)` are recursively normalized but never
