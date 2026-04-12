@@ -34,6 +34,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Usage: shellshape <command>")
 		fmt.Fprintln(os.Stderr, "       echo <command> | shellshape")
 		fmt.Fprintln(os.Stderr, "       shellshape list")
+		fmt.Fprintln(os.Stderr, "       shellshape version")
 		os.Exit(1)
 	}
 
