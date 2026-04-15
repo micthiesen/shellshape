@@ -56,6 +56,151 @@ func ConsumeFusedFlag(tok string, categories []FlagCategory) (string, bool) {
 	return "", false
 }
 
+// EmitPositional appends a placeholder to result for a positional token,
+// except when tok is a subshell substitution (`$(...)`) — in that case
+// the token is appended verbatim so the subshell is preserved. Handlers
+// must never collapse a subshell token to a data placeholder.
+func EmitPositional(result []string, tok, placeholder string) []string {
+	if IsSubshellToken(tok) {
+		return append(result, tok)
+	}
+	return append(result, placeholder)
+}
+
+// ConsumeUntil scans args starting at index i and returns the first
+// terminator token it finds along with the index of the slot after it.
+// If no terminator is found, it returns ("", len(args)). Callers
+// typically skip (or collapse to a single placeholder) everything the
+// helper walked past.
+//
+// Use for grammars like `find ... -exec <cmd> ... ;|+`, where the body
+// of a subcommand runs until a well-known terminator.
+func ConsumeUntil(args []string, i int, terminators map[string]bool) (string, int) {
+	for j := i; j < len(args); j++ {
+		if terminators[args[j]] {
+			return args[j], j + 1
+		}
+	}
+	return "", len(args)
+}
+
+// RepairLeadingFlagSubcommand repairs the case where the outer normalizer
+// extracted a global flag (either `--flag` or `--flag=value`) as what it
+// believed was the subcommand. The flag token is already appended to
+// result; this helper consumes the flag's value if it takes one, walks
+// past any additional leading flags and their values, and emits the
+// real subcommand token when it finds one.
+//
+// Parameters:
+//   - subcommand: the token the outer normalizer extracted as the
+//     subcommand. When this is not flag-like, the helper is a no-op.
+//   - args: the handler's remaining tokens.
+//   - i: the current index in args.
+//   - result: the handler's accumulating output slice.
+//   - categories: flag categories used to decide which leading flags
+//     consume a next-token value and which placeholder that value gets.
+//     Pass nil when every leading flag is boolean (e.g. `ufw --dry-run`).
+//   - verbatimValueFlags: optional flags whose values are kept verbatim
+//     instead of being replaced with a placeholder. Useful for small
+//     finite value sets like systemctl's `-t/--type`. Pass nil if unused.
+//
+// Returns the extended result slice, the real subcommand token (or "" if
+// none was found), and the new position in args.
+//
+// Fused-flag note: when the normalizer extracted a `--flag=value` token,
+// it was already appended to result verbatim and cannot be rewritten —
+// the helper simply advances and finds the real subcommand.
+func RepairLeadingFlagSubcommand(
+	subcommand string,
+	args []string,
+	i int,
+	result []string,
+	categories []FlagCategory,
+	verbatimValueFlags map[string]bool,
+) ([]string, string, int) {
+	if subcommand == "" || !looksLikeFlagSubcommand(subcommand) {
+		return result, subcommand, i
+	}
+
+	// 1. Consume the leaked flag's value, if it has one. A fused flag
+	//    (`--flag=value`) already carries its value in the token that was
+	//    appended by the normalizer; nothing to consume.
+	if !strings.ContainsRune(subcommand, '=') {
+		if placeholder, ok := MatchFlagCategory(subcommand, categories); ok {
+			if i < len(args) && !IsFlagToken(args[i]) {
+				result = EmitPositional(result, args[i], placeholder)
+				i++
+			}
+		} else if verbatimValueFlags[subcommand] {
+			if i < len(args) && !IsFlagToken(args[i]) {
+				result = append(result, args[i])
+				i++
+			}
+		}
+	}
+
+	// 2. Walk forward through any further leading flags (with their
+	//    values) and subshells until we hit a real subcommand token.
+	for i < len(args) {
+		tok := args[i]
+
+		if IsSubshellToken(tok) {
+			result = append(result, tok)
+			i++
+			continue
+		}
+
+		if fused, ok := ConsumeFusedFlag(tok, categories); ok {
+			result = append(result, fused)
+			i++
+			continue
+		}
+
+		if placeholder, ok := MatchFlagCategory(tok, categories); ok {
+			result, i = ConsumeFlagArg(tok, args, i, result, placeholder)
+			continue
+		}
+
+		if verbatimValueFlags[tok] {
+			result = append(result, tok)
+			i++
+			if i < len(args) && !IsFlagToken(args[i]) {
+				result = append(result, args[i])
+				i++
+			}
+			continue
+		}
+
+		if IsFlagToken(tok) {
+			result = append(result, tok)
+			i++
+			continue
+		}
+
+		// First non-flag positional: the real subcommand.
+		result = append(result, tok)
+		return result, tok, i + 1
+	}
+
+	return result, "", i
+}
+
+// looksLikeFlagSubcommand reports whether a subcommand token came from
+// the outer normalizer extracting a flag-like thing. This covers plain
+// flags (`-t`, `--filter`) and fused flags (`--flag=value`).
+func looksLikeFlagSubcommand(tok string) bool {
+	if IsFlagToken(tok) {
+		return true
+	}
+	// A `--flag=value` token that begins with a dash is already handled
+	// by IsFlagToken; this extra branch catches `-Xval` style fused
+	// forms that IsFlagToken may not recognize.
+	if strings.HasPrefix(tok, "-") && strings.ContainsRune(tok, '=') {
+		return true
+	}
+	return false
+}
+
 var RedirectConsumeNext = map[string]bool{
 	">": true, ">>": true, "<": true,
 	"&>": true, "&>>": true,

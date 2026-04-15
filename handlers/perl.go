@@ -38,11 +38,7 @@ func handlePerl(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<perl-expr>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<perl-expr>")
 				exprAssigned = true
 				i++
 			}
@@ -83,11 +79,7 @@ func handlePerl(subcommand string, tokens []string) []string {
 				result = append(result, tok)
 				i++
 				if i < len(args) {
-					if shellshape.IsSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<perl-expr>")
-					}
+					result = shellshape.EmitPositional(result, args[i], "<perl-expr>")
 					exprAssigned = true
 					i++
 				}

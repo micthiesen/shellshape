@@ -18,19 +18,9 @@ func handleNetworkctl(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle global flag consumed as subcommand by the normalizer.
-	if shellshape.IsFlagToken(subcommand) {
-		// networkctl flags are mostly boolean, just skip through to the real subcommand.
-		for i < len(args) && shellshape.IsFlagToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-		// Emit the real subcommand.
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, nil, nil,
+	)
 
 	for i < len(args) {
 		tok := args[i]

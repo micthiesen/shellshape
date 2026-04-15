@@ -23,23 +23,9 @@ func handleLocalectl(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle global flag consumed as subcommand.
-	if shellshape.IsFlagToken(subcommand) {
-		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
-		}
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, nil,
+	)
 
 	hasPositional := false
 

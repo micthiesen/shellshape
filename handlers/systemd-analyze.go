@@ -35,28 +35,11 @@ func handleSystemdAnalyze(subcommand string, tokens []string) []string {
 
 	var result []string
 	i := 0
-	realSubcommand := subcommand
 
-	// When the normalizer consumed a global flag as the "subcommand", find the
-	// real subcommand from remaining tokens.
-	if shellshape.IsFlagToken(subcommand) {
-		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
-		}
-		// Find real subcommand (next non-flag positional).
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			realSubcommand = args[i]
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, subcommand, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, nil,
+	)
+	realSubcommand := subcommand
 
 	// Determine placeholder for positionals based on subcommand.
 	positionalPlaceholder := "<unit>"

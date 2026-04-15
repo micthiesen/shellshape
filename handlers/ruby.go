@@ -84,11 +84,7 @@ func handleRuby(subcommand string, tokens []string) []string {
 
 		// After script path in non-code mode, everything is an arg.
 		if scriptSeen && !hasCode {
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-			} else {
-				result = append(result, "<arg>")
-			}
+			result = shellshape.EmitPositional(result, tok, "<arg>")
 			i++
 			continue
 		}
@@ -136,11 +132,7 @@ func handleRuby(subcommand string, tokens []string) []string {
 					}
 					i++
 					if i < len(args) {
-						if shellshape.IsSubshellToken(args[i]) {
-							result = append(result, args[i])
-						} else {
-							result = append(result, "<code>")
-						}
+						result = shellshape.EmitPositional(result, args[i], "<code>")
 					}
 					hasCode = true
 					i++

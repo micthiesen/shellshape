@@ -65,11 +65,7 @@ func handleQuickemu(subcommand string, tokens []string) []string {
 				i++
 				// If the action takes a tag, consume it.
 				if snapshotWithTag[action] && i < len(args) {
-					if shellshape.IsSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<val>")
-					}
+					result = shellshape.EmitPositional(result, args[i], "<val>")
 					i++
 				}
 			}

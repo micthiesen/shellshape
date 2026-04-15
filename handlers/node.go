@@ -66,11 +66,7 @@ func handleNode(subcommand string, tokens []string) []string {
 
 		if doubleDash || scriptSeen {
 			// Script arguments: collapse all to <arg>.
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-			} else {
-				result = append(result, "<arg>")
-			}
+			result = shellshape.EmitPositional(result, tok, "<arg>")
 			i++
 			continue
 		}

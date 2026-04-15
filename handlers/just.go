@@ -84,11 +84,7 @@ func handleJust(subcommand string, tokens []string) []string {
 			if setFlags[key] {
 				i++
 				if i < len(args) {
-					if shellshape.IsSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<val>")
-					}
+					result = shellshape.EmitPositional(result, args[i], "<val>")
 					i++
 				}
 			} else {
@@ -112,11 +108,7 @@ func handleJust(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			for j := 0; j < 2 && i < len(args); j++ {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<val>")
 				i++
 			}
 			continue

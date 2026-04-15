@@ -64,46 +64,14 @@ func handlePnpm(subcommand string, tokens []string) []string {
 
 	i := 0
 
-	// Flag-repair: the outer normalizer extracts the first token after
-	// `pnpm` as the "subcommand", but that may actually be a global flag
-	// like `--filter` or `-C`. When it is, consume its value with the
-	// correct placeholder, then scan forward for the real subcommand.
-	if shellshape.IsFlagToken(subcommand) {
-		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, leadingFlagCategories); ok {
-			if i < len(args) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
-		}
-		// Emit any further leading flags (with values) until we hit the
-		// real subcommand. Update `subcommand` so the positional logic
-		// below uses it.
-		for i < len(args) {
-			tok := args[i]
-			if placeholder, ok := shellshape.MatchFlagCategory(tok, leadingFlagCategories); ok {
-				result, i = shellshape.ConsumeFlagArg(tok, args, i, result, placeholder)
-				continue
-			}
-			if shellshape.IsFlagToken(tok) {
-				result = append(result, tok)
-				i++
-				continue
-			}
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-				i++
-				continue
-			}
-			subcommand = tok
-			result = append(result, tok)
-			i++
-			break
-		}
-	}
+	// The outer normalizer extracts the first post-exe token as the
+	// subcommand, but that may actually be a global flag (`--filter`,
+	// `-C`, etc.). RepairLeadingFlagSubcommand consumes the leaked
+	// flag's value and walks forward through any further leading flags
+	// to find the real subcommand.
+	result, subcommand, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, leadingFlagCategories, nil,
+	)
 	for i < len(args) {
 		tok := args[i]
 

@@ -55,25 +55,9 @@ func handleSnapper(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle global flags consumed as subcommand by the normalizer.
-	if shellshape.IsFlagToken(subcommand) {
-		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-				result = append(result, placeholder)
-				i++
-			}
-		} else if verbatimFlags[subcommand] {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-				result = append(result, args[i])
-				i++
-			}
-		}
-		// Emit real subcommand.
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, verbatimFlags,
+	)
 
 	for i < len(args) {
 		tok := args[i]

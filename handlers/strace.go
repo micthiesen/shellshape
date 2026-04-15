@@ -77,11 +77,7 @@ func handleStrace(subcommand string, tokens []string) []string {
 
 		// First positional starts the traced command; collapse all remaining tokens.
 		for i < len(args) {
-			if shellshape.IsSubshellToken(args[i]) {
-				result = append(result, args[i])
-			} else {
-				result = append(result, "<cmd>")
-			}
+			result = shellshape.EmitPositional(result, args[i], "<cmd>")
 			i++
 		}
 		break

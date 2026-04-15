@@ -35,45 +35,9 @@ func handleResolvectl(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle global flag consumed as subcommand by the normalizer.
-	if shellshape.IsFlagToken(subcommand) {
-		// Check for --flag=value that was consumed as subcommand.
-		if fused, ok := shellshape.ConsumeFusedFlag(subcommand, categories); ok {
-			// The normalizer already emitted the subcommand token; we need to
-			// replace it. But we can't - we can only append. The fused flag
-			// is already in the output. We just need to handle the remaining.
-			// Actually the normalizer emitted the raw subcommand token.
-			// We can't change it. Let's just handle the remaining tokens.
-			_ = fused
-		} else if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
-		}
-		// Consume more global flags before the real subcommand.
-		for i < len(args) && shellshape.IsFlagToken(args[i]) {
-			flag := args[i]
-			if placeholder, ok := shellshape.MatchFlagCategory(flag, categories); ok {
-				result, i = shellshape.ConsumeFlagArg(flag, args, i, result, placeholder)
-			} else if f, ok := shellshape.ConsumeFusedFlag(flag, categories); ok {
-				result = append(result, f)
-				i++
-			} else {
-				result = append(result, flag)
-				i++
-			}
-		}
-		// Emit the real subcommand.
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, nil,
+	)
 
 	for i < len(args) {
 		tok := args[i]

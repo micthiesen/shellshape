@@ -34,21 +34,10 @@ func handleCpupower(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle --cpu or -c consumed as "subcommand" by the normalizer
-	if shellshape.IsFlagToken(subcommand) {
-		if valFlags[subcommand] {
-			// Consume the value (e.g. "all", "0", "0-3")
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-				result = append(result, "<val>")
-				i++
-			}
-		}
-		// Emit the real subcommand
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	// Handle a leading flag that the normalizer extracted as the subcommand.
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, nil,
+	)
 
 	for i < len(args) {
 		tok := args[i]

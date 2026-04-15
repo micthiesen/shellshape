@@ -57,11 +57,7 @@ func handleUnzip(subcommand string, tokens []string) []string {
 			result = append(result, "-x")
 			i++
 			for i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<pattern>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<pattern>")
 				i++
 			}
 			continue

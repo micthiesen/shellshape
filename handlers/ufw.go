@@ -55,20 +55,10 @@ func handleUfw(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle flag consumed as subcommand (e.g. --dry-run, --force).
-	if shellshape.IsFlagToken(subcommand) {
-		// Consume more flags before the real subcommand.
-		for i < len(args) && shellshape.IsFlagToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-		// Emit the real subcommand.
-		if i < len(args) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			subcommand = args[i]
-			i++
-		}
-	}
+	// Handle a leading flag that the normalizer extracted as the subcommand.
+	result, subcommand, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, nil, nil,
+	)
 
 	for i < len(args) {
 		tok := args[i]

@@ -79,11 +79,7 @@ func handleTar(subcommand string, tokens []string) []string {
 			// If bundle contains 'f', next arg is the archive file.
 			raw := strings.TrimPrefix(bundle, "-")
 			if strings.Contains(raw, "f") && i < len(args) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<archive>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<archive>")
 				i++
 			}
 			continue

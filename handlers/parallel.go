@@ -69,22 +69,14 @@ func handleParallel(subcommand string, tokens []string) []string {
 
 		// In arg-source mode: data values get collapsed, subshells kept.
 		if inArgSource {
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-			} else {
-				result = append(result, "<arg>")
-			}
+			result = shellshape.EmitPositional(result, tok, "<arg>")
 			i++
 			continue
 		}
 
 		// In file-source mode: tokens are file paths.
 		if inFileSource {
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-			} else {
-				result = append(result, "<path>")
-			}
+			result = shellshape.EmitPositional(result, tok, "<path>")
 			i++
 			continue
 		}

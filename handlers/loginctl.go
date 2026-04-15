@@ -39,24 +39,9 @@ func handleLoginctl(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle global flag consumed as subcommand.
-	if shellshape.IsFlagToken(subcommand) {
-		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
-		}
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			subcommand = args[i]
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, subcommand, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, nil,
+	)
 
 	isSessionSubcmd := loginctlSessionSubcmds[subcommand]
 	hasPositional := false

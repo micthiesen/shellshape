@@ -111,11 +111,7 @@ func handleAws(subcommand string, tokens []string) []string {
 			if len(tok) > 2 && tok[:2] == "--" && !booleanFlags[tok] {
 				i++
 				if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-					if shellshape.IsSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<val>")
-					}
+					result = shellshape.EmitPositional(result, args[i], "<val>")
 				} else {
 					// Next token is a flag or missing; don't consume.
 					continue

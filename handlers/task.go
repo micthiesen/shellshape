@@ -53,11 +53,7 @@ func handleTask(subcommand string, tokens []string) []string {
 			result = append(result, "--")
 			i++
 			for i < len(args) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<str>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<str>")
 				i++
 			}
 			break

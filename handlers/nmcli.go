@@ -66,43 +66,19 @@ func handleNmcli(subcommand string, tokens []string) []string {
 		"file": true,
 	}
 
+	leadingCategories := []shellshape.FlagCategory{
+		{Flags: globalValFlags, Placeholder: "<val>"},
+	}
+
 	var result []string
 	i := 0
 
-	// Handle global flag consumed as subcommand by the normalizer.
-	if shellshape.IsFlagToken(subcommand) {
-		// If the flag takes a value, consume it.
-		if globalValFlags[subcommand] {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-		}
-		// Consume any additional global flags before the real subcommand.
-		for i < len(args) && shellshape.IsFlagToken(args[i]) {
-			flag := args[i]
-			result = append(result, flag)
-			i++
-			if globalValFlags[flag] && i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
-				i++
-			}
-		}
-		// Now emit the real subcommand (next non-flag positional).
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			subcommand = args[i]
-			i++
-		}
-	}
+	// Handle a leading flag that the normalizer extracted as the subcommand.
+	// Boolean flags (globalBoolFlags) don't need a category entry; the
+	// helper keeps them verbatim as "unknown flags".
+	result, subcommand, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, leadingCategories, nil,
+	)
 
 	// For connection modify: after the sub-subcommand, first positional is the
 	// connection name (<val>), then everything else is property-value pairs (all <val>).

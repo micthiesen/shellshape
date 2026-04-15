@@ -74,11 +74,7 @@ func handleOtool(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			for n := 0; n < 2 && i < len(args); n++ {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<val>")
 				i++
 			}
 			continue

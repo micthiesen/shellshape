@@ -3,7 +3,6 @@ package handlers
 import (
 	shellshape "github.com/micthiesen/shellshape"
 	"regexp"
-	"strings"
 )
 
 func init() {
@@ -36,26 +35,10 @@ func handleBootctl(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// Handle case where normalizer consumed a flag as the "subcommand".
-	// The normalizer already appended the flag token verbatim. We handle:
-	// 1. Separate flags (--esp-path /efi status): consume value, emit real subcommand
-	// 2. Fused flags (--esp-path=/efi status): just emit real subcommand
-	if shellshape.IsFlagToken(subcommand) || strings.Contains(subcommand, "=") {
-		// For separate flags, consume the value token
-		if !strings.Contains(subcommand, "=") {
-			if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-				if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-					result = append(result, placeholder)
-					i++
-				}
-			}
-		}
-		// Emit the real subcommand (next non-flag positional)
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	// Handle a leading flag that the normalizer extracted as the subcommand.
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, nil,
+	)
 
 	for i < len(args) {
 		tok := args[i]

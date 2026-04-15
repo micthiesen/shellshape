@@ -32,6 +32,8 @@ func handleFind(subcommand string, tokens []string) []string {
 		"-ok": true, "-okdir": true,
 	}
 
+	findExecTerminators := map[string]bool{";": true, "+": true}
+
 	var result []string
 	// `seenPrimary` flips to true once we hit any find expression primary
 	// (anything starting with `-` like `-type`, `-name`, or find's own
@@ -54,15 +56,8 @@ func handleFind(subcommand string, tokens []string) []string {
 			i++
 			// Consume the exec body until we hit `;` or `+`. Emit a single
 			// <cmd> placeholder followed by the terminator.
-			terminator := ""
-			for i < len(args) {
-				if args[i] == ";" || args[i] == "+" {
-					terminator = args[i]
-					i++
-					break
-				}
-				i++
-			}
+			terminator, next := shellshape.ConsumeUntil(args, i, findExecTerminators)
+			i = next
 			result = append(result, "<cmd>")
 			if terminator != "" {
 				result = append(result, terminator)
@@ -75,12 +70,7 @@ func handleFind(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			if i < len(args) {
-				next := args[i]
-				if shellshape.IsSubshellToken(next) {
-					result = append(result, next)
-				} else {
-					result = append(result, "<pattern>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<pattern>")
 				i++
 			}
 			continue

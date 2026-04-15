@@ -41,11 +41,7 @@ func handlePython(subcommand string, tokens []string) []string {
 		}
 
 		if doubleDash || scriptSeen {
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-			} else {
-				result = append(result, "<arg>")
-			}
+			result = shellshape.EmitPositional(result, tok, "<arg>")
 			i++
 			continue
 		}

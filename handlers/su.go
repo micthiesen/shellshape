@@ -84,11 +84,7 @@ func handleSu(subcommand string, tokens []string) []string {
 		}
 
 		// Positional: username
-		if shellshape.IsSubshellToken(tok) {
-			result = append(result, tok)
-		} else {
-			result = append(result, "<val>")
-		}
+		result = shellshape.EmitPositional(result, tok, "<val>")
 		i++
 	}
 

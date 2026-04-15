@@ -32,11 +32,7 @@ func handleKill(subcommand string, tokens []string) []string {
 			result = append(result, tok)
 			i++
 			for i < len(args) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<pid>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<pid>")
 				i++
 			}
 			continue

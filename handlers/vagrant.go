@@ -96,11 +96,7 @@ func handleVagrant(subcommand string, tokens []string) []string {
 
 		// Positional argument.
 		if collapsePositionals {
-			if shellshape.IsSubshellToken(tok) {
-				result = append(result, tok)
-			} else {
-				result = append(result, "<val>")
-			}
+			result = shellshape.EmitPositional(result, tok, "<val>")
 		} else {
 			// VM name: keep verbatim.
 			result = append(result, tok)

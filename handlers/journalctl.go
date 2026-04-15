@@ -101,19 +101,11 @@ func handleJournalctl(subcommand string, tokens []string) []string {
 			// For optional-arg flags, only consume next token if it looks like a value
 			if optionalArgFlags[tok] {
 				if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-					if shellshape.IsSubshellToken(args[i]) {
-						result = append(result, args[i])
-					} else {
-						result = append(result, "<val>")
-					}
+					result = shellshape.EmitPositional(result, args[i], "<val>")
 					i++
 				}
 			} else if i < len(args) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, "<val>")
-				}
+				result = shellshape.EmitPositional(result, args[i], "<val>")
 				i++
 			}
 			continue

@@ -80,31 +80,9 @@ func handleSystemctl(subcommand string, tokens []string) []string {
 	var result []string
 	i := 0
 
-	// When the normalizer consumed a global flag as the "subcommand", the
-	// real subcommand is still in args. Consume any leading flags/values and
-	// emit the real subcommand.
-	if shellshape.IsFlagToken(subcommand) {
-		// The flag token itself was already appended by the normalizer.
-		// If it takes a value, the value is the first token in args.
-		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, categories); ok {
-			if i < len(args) && !shellshape.IsFlagToken(args[i]) {
-				if shellshape.IsSubshellToken(args[i]) {
-					result = append(result, args[i])
-				} else {
-					result = append(result, placeholder)
-				}
-				i++
-			}
-		} else if verbatimValueFlags[subcommand] && i < len(args) && !shellshape.IsFlagToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-		// Now emit the real subcommand (next non-flag positional).
-		if i < len(args) && !shellshape.IsFlagToken(args[i]) && !shellshape.IsSubshellToken(args[i]) {
-			result = append(result, args[i])
-			i++
-		}
-	}
+	result, _, i = shellshape.RepairLeadingFlagSubcommand(
+		subcommand, args, i, result, categories, verbatimValueFlags,
+	)
 
 	hasUnit := false
 
