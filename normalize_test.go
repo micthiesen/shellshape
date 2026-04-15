@@ -491,7 +491,7 @@ func TestNormalizeSubshellComplex(t *testing.T) {
 
 		// Nested subshells
 		{"nested subshell", "echo $(echo $(git status))", "echo $(echo $(git status))"},
-		{"nested subshell with path", "echo $(cat $(find . -name foo.go))", "echo $(cat $(find . -name <pattern>))"},
+		{"nested subshell with path", "echo $(cat $(find . -name foo.go))", "echo $(cat $(find <path> -name <pattern>))"},
 
 		// Subshells with newlines inside
 		{"subshell with newlines", "echo $(echo foo\necho bar)", "echo $(echo <str> ;+)"},

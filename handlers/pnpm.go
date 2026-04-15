@@ -35,6 +35,11 @@ func handlePnpm(subcommand string, tokens []string) []string {
 		"-C":       true,
 	}
 
+	leadingFlagCategories := []shellshape.FlagCategory{
+		{Flags: valFlags, Placeholder: "<val>"},
+		{Flags: pathFlags, Placeholder: "<path>"},
+	}
+
 	// Subcommands where all positionals are package names.
 	pkgSubcommands := map[string]bool{
 		"add": true, "remove": true, "rm": true, "uninstall": true, "un": true,
@@ -58,6 +63,47 @@ func handlePnpm(subcommand string, tokens []string) []string {
 	passthrough := false // after -- or after first positional in run/exec
 
 	i := 0
+
+	// Flag-repair: the outer normalizer extracts the first token after
+	// `pnpm` as the "subcommand", but that may actually be a global flag
+	// like `--filter` or `-C`. When it is, consume its value with the
+	// correct placeholder, then scan forward for the real subcommand.
+	if shellshape.IsFlagToken(subcommand) {
+		if placeholder, ok := shellshape.MatchFlagCategory(subcommand, leadingFlagCategories); ok {
+			if i < len(args) {
+				if shellshape.IsSubshellToken(args[i]) {
+					result = append(result, args[i])
+				} else {
+					result = append(result, placeholder)
+				}
+				i++
+			}
+		}
+		// Emit any further leading flags (with values) until we hit the
+		// real subcommand. Update `subcommand` so the positional logic
+		// below uses it.
+		for i < len(args) {
+			tok := args[i]
+			if placeholder, ok := shellshape.MatchFlagCategory(tok, leadingFlagCategories); ok {
+				result, i = shellshape.ConsumeFlagArg(tok, args, i, result, placeholder)
+				continue
+			}
+			if shellshape.IsFlagToken(tok) {
+				result = append(result, tok)
+				i++
+				continue
+			}
+			if shellshape.IsSubshellToken(tok) {
+				result = append(result, tok)
+				i++
+				continue
+			}
+			subcommand = tok
+			result = append(result, tok)
+			i++
+			break
+		}
+	}
 	for i < len(args) {
 		tok := args[i]
 

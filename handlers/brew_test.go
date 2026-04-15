@@ -12,33 +12,33 @@ func TestBrew(t *testing.T) {
 		want  string
 	}{
 		// install subcommand
-		{"install single formula", "brew install wget", "brew install wget"},
-		{"install multiple formulas", "brew install node python go", "brew install node python go"},
-		{"install cask", "brew install --cask firefox", "brew install --cask firefox"},
-		{"install HEAD", "brew install --HEAD neovim", "brew install --HEAD neovim"},
-		{"install force verbose", "brew install --force --verbose node", "brew install --force --verbose node"},
-		{"install formula flag", "brew install --formula gcc", "brew install --formula gcc"},
+		{"install single formula", "brew install wget", "brew install <pkg>"},
+		{"install multiple formulas", "brew install node python go", "brew install <pkg>+"},
+		{"install cask", "brew install --cask firefox", "brew install --cask <pkg>"},
+		{"install HEAD", "brew install --HEAD neovim", "brew install --HEAD <pkg>"},
+		{"install force verbose", "brew install --force --verbose node", "brew install --force --verbose <pkg>"},
+		{"install formula flag", "brew install --formula gcc", "brew install --formula <pkg>"},
 
 		// uninstall subcommand
-		{"uninstall formula", "brew uninstall node", "brew uninstall node"},
-		{"uninstall cask", "brew uninstall --cask firefox", "brew uninstall --cask firefox"},
-		{"remove alias", "brew remove wget", "brew remove wget"},
+		{"uninstall formula", "brew uninstall node", "brew uninstall <pkg>"},
+		{"uninstall cask", "brew uninstall --cask firefox", "brew uninstall --cask <pkg>"},
+		{"remove alias", "brew remove wget", "brew remove <pkg>"},
 
 		// upgrade subcommand
 		{"upgrade all", "brew upgrade", "brew upgrade"},
-		{"upgrade specific", "brew upgrade node", "brew upgrade node"},
-		{"upgrade multiple", "brew upgrade node python go", "brew upgrade node python go"},
+		{"upgrade specific", "brew upgrade node", "brew upgrade <pkg>"},
+		{"upgrade multiple", "brew upgrade node python go", "brew upgrade <pkg>+"},
 		{"upgrade greedy cask", "brew upgrade --greedy --cask", "brew upgrade --greedy --cask"},
 
 		// info subcommand
-		{"info formula", "brew info node", "brew info node"},
-		{"info json", "brew info --json=v2 node", "brew info --json=<val> node"},
+		{"info formula", "brew info node", "brew info <pkg>"},
+		{"info json", "brew info --json=v2 node", "brew info --json=<val> <pkg>"},
 
 		// search subcommand
 		{"search text", "brew search postgres", "brew search <query>"},
 		{"search with flag", "brew search --cask font", "brew search --cask <query>"},
 
-		// list subcommand
+		// list subcommand (formula names stay verbatim; list is a query-ish view)
 		{"list all", "brew list", "brew list"},
 		{"list cask", "brew list --cask", "brew list --cask"},
 		{"list specific", "brew list node", "brew list node"},
@@ -48,26 +48,26 @@ func TestBrew(t *testing.T) {
 		{"tap list", "brew tap", "brew tap"},
 		{"untap repo", "brew untap homebrew/cask-fonts", "brew untap homebrew/cask-fonts"},
 
-		// services subcommand
+		// services subcommand: action verbatim, service name <pkg>
 		{"services list", "brew services list", "brew services list"},
-		{"services start", "brew services start postgresql", "brew services start postgresql"},
-		{"services stop", "brew services stop redis", "brew services stop redis"},
-		{"services restart", "brew services restart nginx", "brew services restart nginx"},
+		{"services start", "brew services start postgresql", "brew services start <pkg>"},
+		{"services stop", "brew services stop redis", "brew services stop <pkg>"},
+		{"services restart", "brew services restart nginx", "brew services restart <pkg>"},
 
 		// deps subcommand
-		{"deps formula", "brew deps node", "brew deps node"},
-		{"deps tree", "brew deps --tree node", "brew deps --tree node"},
+		{"deps formula", "brew deps node", "brew deps <pkg>"},
+		{"deps tree", "brew deps --tree node", "brew deps --tree <pkg>"},
 
 		// reinstall
-		{"reinstall formula", "brew reinstall node", "brew reinstall node"},
+		{"reinstall formula", "brew reinstall node", "brew reinstall <pkg>"},
 
 		// pin/unpin
-		{"pin formula", "brew pin node", "brew pin node"},
-		{"unpin formula", "brew unpin node", "brew unpin node"},
+		{"pin formula", "brew pin node", "brew pin <pkg>"},
+		{"unpin formula", "brew unpin node", "brew unpin <pkg>"},
 
 		// boolean flags preserved
-		{"quiet flag", "brew install -q node", "brew install -q node"},
-		{"verbose short", "brew install -v wget", "brew install -v wget"},
+		{"quiet flag", "brew install -q node", "brew install -q <pkg>"},
+		{"verbose short", "brew install -v wget", "brew install -v <pkg>"},
 		{"dry-run", "brew upgrade --dry-run", "brew upgrade --dry-run"},
 
 		// other/unknown subcommands fall back to classifyToken
@@ -89,6 +89,22 @@ func TestBrew(t *testing.T) {
 	t.Run("different search terms collide", func(t *testing.T) {
 		a := shellshape.Normalize("brew search postgres")
 		b := shellshape.Normalize("brew search redis")
+		if a != b {
+			t.Errorf("expected %q == %q", a, b)
+		}
+	})
+
+	t.Run("different formula names collide", func(t *testing.T) {
+		a := shellshape.Normalize("brew install sleepwatcher")
+		b := shellshape.Normalize("brew install yabai")
+		if a != b {
+			t.Errorf("expected %q == %q", a, b)
+		}
+	})
+
+	t.Run("different service names collide", func(t *testing.T) {
+		a := shellshape.Normalize("brew services start sleepwatcher")
+		b := shellshape.Normalize("brew services start nginx")
 		if a != b {
 			t.Errorf("expected %q == %q", a, b)
 		}

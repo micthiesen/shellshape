@@ -37,6 +37,11 @@ func TestGh(t *testing.T) {
 		{"api endpoint", "gh api repos/owner/repo/pulls", "gh api <path>"},
 		{"api with jq", "gh api repos/owner/repo/pulls --jq '.[].title'", "gh api <path> --jq <val>"},
 		{"api method", "gh api repos/owner/repo/issues -X POST -f title=hello", "gh api <path> -X <val> -f <val>"},
+		{
+			"api body with literal subshells inside single quotes",
+			`gh api repos/owner/repo/pulls/1/comments -X POST -F in_reply_to=3080986619 -f body='Verified. Pins resolved via $(gh api refs) against each upstream. checkout is $(git rev-parse HEAD). Cache: "pnpm" is unaffected.'`,
+			"gh api <path> -X <val> -F <val> -f <val>",
+		},
 
 		// Short flags
 		{"short repo flag", "gh pr view 10 -R owner/repo", "gh pr view N -R <val>"},

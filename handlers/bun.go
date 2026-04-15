@@ -3,7 +3,21 @@ package handlers
 import shellshape "github.com/micthiesen/shellshape"
 
 func init() {
-	shellshape.Register("bun", handleBun, shellshape.HandlerOptions{HasSubcommands: true})
+	// Only these tokens are treated as bun subcommands. Anything else (a
+	// script path like /tmp/foo.ts, or a package directory) is handed to
+	// the handler as script-runner input.
+	bunSubcommands := map[string]bool{
+		"run": true, "test": true, "install": true, "i": true,
+		"add": true, "remove": true, "rm": true, "uninstall": true,
+		"update": true, "upgrade": true, "outdated": true,
+		"build": true, "init": true, "create": true,
+		"link": true, "unlink": true, "pm": true, "audit": true,
+		"x": true, "repl": true, "patch": true,
+	}
+	shellshape.Register("bun", handleBun, shellshape.HandlerOptions{
+		HasSubcommands: true,
+		Subcommands:    bunSubcommands,
+	})
 }
 
 // handleBun handles the bun command.
@@ -32,7 +46,13 @@ func handleBun(subcommand string, tokens []string) []string {
 		"--timeout": true, "--bail": true, "--port": true,
 	}
 
+	// Script-runner mode: `bun <script.ts> [args...]`. Empty subcommand means
+	// the caller invoked bun directly on a script path. First positional is a
+	// path; remaining positionals are opaque script arguments.
+	scriptMode := subcommand == ""
+
 	var result []string
+	sawScriptPath := false
 
 	i := 0
 	for i < len(args) {
@@ -66,6 +86,16 @@ func handleBun(subcommand string, tokens []string) []string {
 		}
 
 		// Positional
+		if scriptMode {
+			if !sawScriptPath {
+				result = append(result, "<path>")
+				sawScriptPath = true
+			} else {
+				result = append(result, "<arg>")
+			}
+			i++
+			continue
+		}
 		result = append(result, shellshape.ClassifyToken(tok))
 		i++
 	}

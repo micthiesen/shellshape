@@ -13,7 +13,7 @@ func init() {
 // Path flags (-d, --dir, -t, --target) consume next arg as <path>.
 // Value flags (--ignore, --defer, --override) consume next arg as <val>.
 // Boolean flags (-D, -R, -S, -n, -v, --adopt, etc.) are preserved.
-// Positionals are package names and kept verbatim (they're structural).
+// Positionals are package names, collapsed to <pkg>.
 // Flags with =value syntax (--dir=X, --ignore=X) collapse the value.
 func handleStow(subcommand string, tokens []string) []string {
 	args, redirects := shellshape.SplitRedirects(tokens)
@@ -73,8 +73,8 @@ func handleStow(subcommand string, tokens []string) []string {
 			continue
 		}
 
-		// Positional: package name, keep verbatim.
-		result = append(result, tok)
+		// Positional: package name, collapse to <pkg>.
+		result = append(result, "<pkg>")
 		i++
 	}
 

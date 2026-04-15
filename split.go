@@ -87,6 +87,15 @@ func splitTopLevel(command string, operators []string) []segment {
 			continue
 		}
 
+		// Outside quotes, a backslash escapes the next character so it is
+		// never interpreted as an operator (e.g. `find ... -exec cmd {} \;`
+		// where `\;` is the argument terminator for -exec, not a real ;).
+		if ch == '\\' && i+1 < len(command) {
+			cur = append(cur, ch, command[i+1])
+			i += 2
+			continue
+		}
+
 		// Track $( for subshell
 		if ch == '$' && i+1 < len(command) && command[i+1] == '(' {
 			subshellDepth++

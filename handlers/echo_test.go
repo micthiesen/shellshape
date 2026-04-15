@@ -20,6 +20,8 @@ func TestEcho(t *testing.T) {
 		{"with redirect", "echo hi > /tmp/out", "echo <str> > <path>"},
 		{"printf", `printf "%s\n" foo`, "printf <str>"},
 		{"in pipeline", "echo hi && echo bye", "echo <str> && echo <str>"},
+		{"bare dashed token", "echo ---chunkReload---", "echo <str>"},
+		{"bare marker", "echo ---START---", "echo <str>"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

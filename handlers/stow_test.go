@@ -11,37 +11,37 @@ func TestStow(t *testing.T) {
 		input string
 		want  string
 	}{
-		// Basic usage - package names kept verbatim
-		{"single package", "stow zsh", "stow zsh"},
-		{"multiple packages", "stow zsh vim claude", "stow zsh vim claude"},
+		// Basic usage - package names collapse to <pkg>
+		{"single package", "stow zsh", "stow <pkg>"},
+		{"multiple packages", "stow zsh vim claude", "stow <pkg>+"},
 
 		// Boolean flags
-		{"delete flag", "stow -D zsh", "stow -D zsh"},
-		{"restow flag", "stow -R zsh vim", "stow -R zsh vim"},
-		{"simulate flag", "stow -n zsh", "stow -n zsh"},
-		{"adopt flag", "stow --adopt zsh", "stow --adopt zsh"},
-		{"no-folding flag", "stow --no-folding zsh", "stow --no-folding zsh"},
-		{"dotfiles flag", "stow --dotfiles zsh", "stow --dotfiles zsh"},
+		{"delete flag", "stow -D zsh", "stow -D <pkg>"},
+		{"restow flag", "stow -R zsh vim", "stow -R <pkg>+"},
+		{"simulate flag", "stow -n zsh", "stow -n <pkg>"},
+		{"adopt flag", "stow --adopt zsh", "stow --adopt <pkg>"},
+		{"no-folding flag", "stow --no-folding zsh", "stow --no-folding <pkg>"},
+		{"dotfiles flag", "stow --dotfiles zsh", "stow --dotfiles <pkg>"},
 
 		// Flags with path arguments
-		{"dir flag short", "stow -d ~/.dotfiles zsh", "stow -d <path> zsh"},
-		{"dir flag long", "stow --dir=/usr/local/stow zsh", "stow --dir=<val> zsh"},
-		{"target flag short", "stow -t ~ zsh", "stow -t <path> zsh"},
-		{"target flag long", "stow --target=/usr/local zsh", "stow --target=<val> zsh"},
-		{"both dir and target", "stow -d ~/dotfiles -t ~ zsh vim", "stow -d <path> -t <path> zsh vim"},
+		{"dir flag short", "stow -d ~/.dotfiles zsh", "stow -d <path> <pkg>"},
+		{"dir flag long", "stow --dir=/usr/local/stow zsh", "stow --dir=<val> <pkg>"},
+		{"target flag short", "stow -t ~ zsh", "stow -t <path> <pkg>"},
+		{"target flag long", "stow --target=/usr/local zsh", "stow --target=<val> <pkg>"},
+		{"both dir and target", "stow -d ~/dotfiles -t ~ zsh vim", "stow -d <path> -t <path> <pkg>+"},
 
 		// Flags with value arguments
-		{"ignore flag", "stow --ignore='.git' zsh", "stow --ignore=<val> zsh"},
-		{"defer flag", "stow --defer=man zsh", "stow --defer=<val> zsh"},
-		{"override flag", "stow --override=man zsh", "stow --override=<val> zsh"},
-		{"ignore separate", "stow --ignore .git zsh", "stow --ignore <val> zsh"},
+		{"ignore flag", "stow --ignore='.git' zsh", "stow --ignore=<val> <pkg>"},
+		{"defer flag", "stow --defer=man zsh", "stow --defer=<val> <pkg>"},
+		{"override flag", "stow --override=man zsh", "stow --override=<val> <pkg>"},
+		{"ignore separate", "stow --ignore .git zsh", "stow --ignore <val> <pkg>"},
 
 		// Combined flags
-		{"verbose and simulate", "stow -n -v -d ~/dotfiles zsh", "stow -n -v -d <path> zsh"},
-		{"restow with target", "stow -R -t /usr/local zsh vim", "stow -R -t <path> zsh vim"},
+		{"verbose and simulate", "stow -n -v -d ~/dotfiles zsh", "stow -n -v -d <path> <pkg>"},
+		{"restow with target", "stow -R -t /usr/local zsh vim", "stow -R -t <path> <pkg>+"},
 
 		// Numeric --flag=value normalizes the value
-		{"verbose flag=value", "stow --verbose=5 zsh", "stow --verbose=N zsh"},
+		{"verbose flag=value", "stow --verbose=5 zsh", "stow --verbose=N <pkg>"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

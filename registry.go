@@ -8,6 +8,12 @@ type HandlerOptions struct {
 	// (e.g. "docker run", "git commit"). The subcommand is extracted and
 	// passed to the handler before remaining tokens.
 	HasSubcommands bool
+
+	// Subcommands, when non-nil, restricts subcommand extraction to only
+	// tokens in this set. Useful for commands like `bun` that can be invoked
+	// either with a subcommand (`bun run`, `bun test`) or as a script runner
+	// (`bun /tmp/script.ts`). Only applies when HasSubcommands is true.
+	Subcommands map[string]bool
 }
 
 var handlers = map[string]HandlerFunc{}
@@ -27,6 +33,18 @@ func Register(name string, fn HandlerFunc, opts ...HandlerOptions) {
 
 func hasSubcommands(exe string) bool {
 	return handlerOptions[exe].HasSubcommands
+}
+
+// isValidSubcommand reports whether tok should be extracted as the
+// subcommand for exe. When a handler declares a Subcommands whitelist,
+// only tokens in that set qualify; otherwise any token (including global
+// flags) is accepted for backwards compatibility. Handlers that want to
+// handle leading global flags themselves can use the whitelist to opt out.
+func isValidSubcommand(exe, tok string) bool {
+	if set := handlerOptions[exe].Subcommands; set != nil {
+		return set[tok]
+	}
+	return true
 }
 
 // RegisteredHandlers returns a sorted list of all registered command names.

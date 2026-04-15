@@ -46,6 +46,12 @@ func TestBun(t *testing.T) {
 
 		// Flags with =
 		{"long flag with value", "bun run --port=3000 dev", "bun run --port=<val> dev"},
+
+		// Script-runner mode (no subcommand)
+		{"script path absolute", "bun /tmp/ocr-analyze.ts", "bun <path>"},
+		{"script path relative", "bun packages/scripts/src/validateSso.ts", "bun <path>"},
+		{"script with args", "bun packages/scripts/src/validateSso.ts main", "bun <path> <arg>"},
+		{"script with multiple args", "bun /tmp/tool.ts foo bar baz", "bun <path> <arg>+"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -87,6 +93,24 @@ func TestBun(t *testing.T) {
 		subshell := shellshape.Normalize("bun run $(dangerous-command)")
 		if benign == subshell {
 			t.Error("subshell must produce different shape than literal")
+		}
+	})
+
+	// Script-runner mode: different script paths collide.
+	t.Run("different script paths collide", func(t *testing.T) {
+		a := shellshape.Normalize("bun /tmp/ocr-analyze.ts")
+		b := shellshape.Normalize("bun /tmp/ocr-audit.ts")
+		if a != b {
+			t.Errorf("expected %q == %q", a, b)
+		}
+	})
+
+	// Script-runner mode: subshell script path is not collapsed.
+	t.Run("script-runner subshell not collapsed", func(t *testing.T) {
+		benign := shellshape.Normalize("bun /tmp/foo.ts")
+		subshell := shellshape.Normalize("bun $(malicious)")
+		if benign == subshell {
+			t.Error("subshell must produce different shape than literal path")
 		}
 	})
 }

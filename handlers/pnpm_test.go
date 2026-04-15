@@ -60,6 +60,13 @@ func TestPnpm(t *testing.T) {
 		{"yarn add", "yarn add react", "yarn add <pkg>"},
 		{"yarn remove", "yarn remove lodash", "yarn remove <pkg>"},
 		{"yarn run", "yarn run build", "yarn run build"},
+
+		// Leading global flags (flag-repair): the real subcommand comes later.
+		{"leading filter bare", "pnpm --filter infra exec tsgo --noEmit", "pnpm --filter <val> exec tsgo --noEmit"},
+		{"leading filter path", "pnpm --filter packages/backend exec tsgo", "pnpm --filter <val> exec tsgo"},
+		{"leading filter scoped", "pnpm --filter @myorg/pkg exec vitest", "pnpm --filter <val> exec vitest"},
+		{"leading -C with add", "pnpm -C /projects/app add react lodash", "pnpm -C <path> add <pkg>+"},
+		{"leading -C with install", "pnpm -C /projects/app install", "pnpm -C <path> install"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

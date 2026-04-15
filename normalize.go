@@ -159,8 +159,10 @@ func normalizeSingleCommand(seg string) string {
 	result := append(envParts, exe)
 
 	var subcommand string
-	// Subcommand detection.
-	if hasSubcommands(exe) && i < len(tokens) {
+	// Subcommand detection. Leading flags (and their values for handlers
+	// that opt in with a whitelist) are left for the per-executable handler
+	// so they can be classified properly.
+	if hasSubcommands(exe) && i < len(tokens) && isValidSubcommand(exe, tokens[i]) {
 		subcommand = tokens[i]
 		result = append(result, tokens[i])
 		i++
@@ -202,38 +204,88 @@ func normalizeSingleCommand(seg string) string {
 	return strings.Join(result, " ")
 }
 
-var subshellRE = regexp.MustCompile(`\$\(`)
-var backtickRE = regexp.MustCompile("`[^`]*`")
-
 func normalizeSubstitutions(s string) string {
-	// Backticks first: replace with single-quoted opaque placeholder.
-	s = backtickRE.ReplaceAllString(s, "'$(<subshell>)'")
-
 	var out strings.Builder
 	i := 0
+	// Track outer shell quoting context. Bash does NOT expand $(…) or `…`
+	// inside single quotes, so the replacement must be skipped there —
+	// otherwise the emitted `'$(<subshell>)'` wrapper would break the
+	// containing quotes and cause shlex to split the body into many tokens.
+	inSingle := false
+	inDouble := false
 	for i < len(s) {
-		if s[i] == '$' && i+1 < len(s) && s[i+1] == '(' {
-			// Find matching close paren with depth tracking.
+		c := s[i]
+
+		if inSingle {
+			out.WriteByte(c)
+			if c == '\'' {
+				inSingle = false
+			}
+			i++
+			continue
+		}
+
+		if c == '\'' {
+			out.WriteByte(c)
+			inSingle = true
+			i++
+			continue
+		}
+
+		if c == '"' {
+			out.WriteByte(c)
+			inDouble = !inDouble
+			i++
+			continue
+		}
+
+		if c == '\\' && i+1 < len(s) {
+			out.WriteByte(c)
+			out.WriteByte(s[i+1])
+			i += 2
+			continue
+		}
+
+		if c == '`' {
+			j := i + 1
+			for j < len(s) && s[j] != '`' {
+				j++
+			}
+			if j < len(s) {
+				out.WriteString("'$(<subshell>)'")
+				i = j + 1
+				continue
+			}
+			// Unbalanced: treat as literal.
+			out.WriteByte(c)
+			i++
+			continue
+		}
+
+		if c == '$' && i+1 < len(s) && s[i+1] == '(' {
+			// Find matching close paren with depth tracking. The inner
+			// scan has its own local quote state because the subshell body
+			// is its own shell context.
 			depth := 1
 			j := i + 2
-			inSingle := false
-			inDouble := false
+			localSingle := false
+			localDouble := false
 			for j < len(s) && depth > 0 {
-				c := s[j]
-				if inSingle {
-					if c == '\'' {
-						inSingle = false
+				cc := s[j]
+				if localSingle {
+					if cc == '\'' {
+						localSingle = false
 					}
-				} else if inDouble {
-					if c == '"' {
-						inDouble = false
+				} else if localDouble {
+					if cc == '"' {
+						localDouble = false
 					}
 				} else {
-					switch c {
+					switch cc {
 					case '\'':
-						inSingle = true
+						localSingle = true
 					case '"':
-						inDouble = true
+						localDouble = true
 					case '(':
 						depth++
 					case ')':
@@ -261,7 +313,8 @@ func normalizeSubstitutions(s string) string {
 			out.WriteString(s[i:])
 			return out.String()
 		}
-		out.WriteByte(s[i])
+
+		out.WriteByte(c)
 		i++
 	}
 	return out.String()
