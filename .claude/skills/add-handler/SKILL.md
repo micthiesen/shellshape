@@ -1,160 +1,62 @@
 ---
 name: add-handler
-description: Add a new shellshape handler for a specific command (e.g. curl, awk, docker, jq)
+description: Add or alias a shellshape handler for a command whose argument grammar needs command-specific normalization.
 argument-hint: <executable-name>
 ---
 
-# Add a new shellshape handler
+# Add a shellshape handler
 
-You are adding a handler for `$ARGUMENTS` to the shellshape normalizer. Follow this process exactly.
+Add or alias a handler for `$ARGUMENTS` with the smallest grammar that preserves
+command structure and collapses data.
 
-## Step 0: Check for an existing handler to alias
+## Decide the shape
 
-If the command is functionally identical to an existing handler (same flag grammar and positional semantics), just add it as an alias in that handler's `init()` instead of creating a new handler file. Add test cases for the new name to the existing test file and you're done.
+First check whether an existing handler has the same flag and positional grammar.
+If so, register the command as an alias and extend that handler's tests.
 
-## Step 1: Research the command
+Otherwise, research the command's official documentation and representative
+invocations. Identify:
 
-Understand how `$ARGUMENTS` is actually used. You need to know:
+- boolean flags and flags that consume paths, values, patterns, or numbers;
+- positional roles and subcommands;
+- tokens that are data and should collapse versus structure that must remain.
 
-- Which flags take arguments (and what kind: paths, patterns, numbers, expressions, URLs)
-- Which flags are boolean (no argument)
-- What the positional arguments mean (is the first one special? are the rest files?)
-- Whether it has subcommands (like `docker run` vs `docker build`)
-- Common real-world invocations
+State the intended shapes as a brief progress update, then continue unless the
+expected normalization is materially ambiguous.
 
-Do this research by:
+## Implement from a failing test
 
-1. Run `curl -s 'cheat.sh/$ARGUMENTS?T'` to get a quick reference with common flags and examples
-2. If you need more detail (e.g. obscure flags, exact argument semantics), look up the official man pages online or use other sources
-3. Think about what tokens are **data** (should collapse) vs **structure** (should stay verbatim)
+Create `handlers/<command>_test.go` first. Cover common forms, flag arguments,
+positionals, aliases or subcommands, and edge cases. Include:
 
-## Step 2: Design the normalization rules
+- a collision test proving different data values produce the same shape;
+- a safety test proving a `$(...)` token does not collapse like literal data.
 
-Before writing any code, write out your plan:
+Run the focused test and confirm that the new case fails for the expected reason.
+Then create `handlers/<command>.go` or update the aliased handler.
 
-- What placeholder does the "main" positional get? (e.g. `<pattern>` for grep, `<sed-expr>` for sed, `<filter>` for jq)
-- Which flags consume the next token, and what placeholder does it get?
-- Are there any flags that take numeric arguments (should become `N`)?
-- Are there subcommands that change the argument grammar?
-- What should the shape look like for 5-10 common invocations?
+Handlers register from `init()`. Pass
+`shellshape.HandlerOptions{HasSubcommands: true}` when subcommands change the
+grammar. In the token walk:
 
-Share this plan with the user before proceeding.
+- call `shellshape.SplitRedirects(tokens)` first and append redirects last;
+- check `shellshape.IsSubshellToken` before collapsing a positional;
+- use `shellshape.IsFlagToken` and `shellshape.ClassifyToken` for shared rules;
+- walk by index when flags consume the next token;
+- use `ConsumeFlagArg`, `FlagCategory`, `MatchFlagCategory`, and
+  `ConsumeFusedFlag` instead of duplicating flag parsing.
 
-## Step 3: Write the test file first (TDD)
+Read `handler.go` for the shared helpers and use a nearby handler with comparable
+grammar as the local pattern.
 
-Create `handlers/$ARGUMENTS_test.go`. Follow the exact pattern from existing handler tests.
+## Verify
 
-Structure your tests in these categories:
-
-```go
-package handlers
-
-import (
-    shellshape "github.com/micthiesen/shellshape"
-    "testing"
-)
-
-func TestCommandName(t *testing.T) {
-    tests := []struct {
-        name  string
-        input string
-        want  string
-    }{
-        // Basic usage
-        // Flags with arguments
-        // Multiple positionals
-        // Edge cases
-    }
-    // ...
-
-    // COLLISION TESTS: different data values → same shape
-    t.Run("different X collide", func(t *testing.T) { ... })
-
-    // SAFETY TEST: subshell must not collapse (one per handler, mandatory)
-    t.Run("subshell not collapsed", func(t *testing.T) {
-        benign := shellshape.Normalize("$ARGUMENTS literal-arg")
-        subshell := shellshape.Normalize("$ARGUMENTS $(dangerous-command)")
-        if benign == subshell {
-            t.Error("subshell must produce different shape than literal")
-        }
-    })
-}
-```
-
-Run the tests. They should fail. That's correct.
+Format the changed Go files, then run:
 
 ```bash
-go test ./... -run TestCommandName -v
+go vet ./...
+go test ./...
 ```
 
-## Step 4: Implement the handler
-
-Create `handlers/$ARGUMENTS.go`. The handler self-registers via `init()`, so no other files need to be modified. Use this template:
-
-```go
-package handlers
-
-import shellshape "github.com/micthiesen/shellshape"
-
-func init() {
-    shellshape.Register("$ARGUMENTS", handleCommandName)
-}
-
-func handleCommandName(subcommand string, tokens []string) []string {
-    args, redirects := shellshape.SplitRedirects(tokens)
-
-    var result []string
-    // ... your logic here ...
-
-    result = append(result, redirects...)
-    return result
-}
-```
-
-If the command has aliases (like grep/egrep/fgrep), register all of them in init():
-
-```go
-func init() {
-    for _, name := range []string{"$ARGUMENTS", "alias1", "alias2"} {
-        shellshape.Register(name, handleCommandName)
-    }
-}
-```
-
-If the command has subcommands (like `docker run`, `git commit`), pass `HandlerOptions`:
-
-```go
-func init() {
-    shellshape.Register("$ARGUMENTS", handleCommandName, shellshape.HandlerOptions{HasSubcommands: true})
-}
-```
-
-Key rules:
-- Always call `shellshape.SplitRedirects(tokens)` first, append redirects at end
-- Always check `shellshape.IsSubshellToken(tok)` BEFORE collapsing any positional to a placeholder
-- Use `shellshape.IsFlagToken(tok)` to distinguish flags from positionals
-- Use `shellshape.ClassifyToken(tok)` for positionals that should get generic classification (usually file paths)
-- Walk tokens with an index variable (`i`), not `range`, when flags consume next args
-- Use the shared utilities from `handler.go` for flag processing (read the file to see what's available):
-  - `shellshape.ConsumeFlagArg(tok, args, i, result, "<placeholder>")` to consume a flag and its next token (handles subshell preservation automatically)
-  - `shellshape.FlagCategory` + `shellshape.MatchFlagCategory` to replace repetitive if/else chains when you have 3+ flag categories
-  - `shellshape.ConsumeFusedFlag(tok, categories)` to handle `--flag=value` syntax
-- When a handler has 3+ flag categories (e.g. pathFlags, valFlags, numericFlags), define a `categories` slice and use `shellshape.MatchFlagCategory` in the loop instead of sequential if blocks
-
-Reference `handlers/grep.go` for a handler with flag-consuming arguments, or `handlers/echo.go` for a simple positional-collapsing handler.
-
-## Step 5: Run tests and iterate
-
-```bash
-go vet ./... && go test ./... -v
-```
-
-All tests must pass, including the existing ones (no regressions). If a test fails, fix the handler, not the test (unless you got the expected shape wrong in Step 3).
-
-## Checklist before done
-
-- [ ] Handler test file with 8+ test cases covering common usage
-- [ ] At least one collision test (different data → same shape)
-- [ ] Subshell safety test (mandatory, never skip)
-- [ ] Handler implementation with `init()` self-registration
-- [ ] `go vet ./... && go test ./...` passes clean
+Fix regressions in the handler or a mistaken expected shape. Preserve the
+subshell distinction in every path that collapses user input.
