@@ -6,7 +6,7 @@ argument-hint: <executable-name>
 
 # Add a shellshape handler
 
-Add or alias a handler for `$ARGUMENTS` with the smallest grammar that preserves
+Add or alias a handler for the command or executable supplied by the user with the smallest grammar that preserves
 command structure and collapses data.
 
 ## Decide the shape

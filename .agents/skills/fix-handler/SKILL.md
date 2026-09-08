@@ -6,7 +6,7 @@ argument-hint: <command-that-normalizes-wrong>
 
 # Fix a shellshape handler
 
-Reproduce `Normalize("$ARGUMENTS")` and determine the expected structural shape.
+Reproduce `Normalize` with the command supplied by the user and determine the expected structural shape.
 Trace the fault to the executable handler, `ClassifyToken`, or preprocessing.
 Infer the expected result from established rules; ask only if distinct reasonable
 shapes would materially change behavior. Report the diagnosis briefly, then continue.

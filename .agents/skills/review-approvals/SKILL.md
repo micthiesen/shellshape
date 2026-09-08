@@ -9,10 +9,11 @@ argument-hint: [hours (default: 24)]
 Query the recent event report with:
 
 ```bash
-bash ${CLAUDE_SKILL_DIR}/scripts/query-events.sh $ARGUMENTS
+bash .agents/skills/review-approvals/scripts/query-events.sh [hours]
 ```
 
-The default window is 24 hours. Inspect singleton shapes, near-duplicates for one
+Replace `[hours]` with the requested number of hours, or omit it for the default
+24-hour window. Inspect singleton shapes, near-duplicates for one
 executable, and high-cardinality executables. Literal paths, numbers, patterns,
 headers, URLs, or other data often indicate under-normalization; distinct command
 grammar that collapsed together indicates over-normalization.
